@@ -1,20 +1,23 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public enum ActionType
-{
-    Movement,
-    SceneTransition,
-    ItemPickup,
-    ItemDrop,  // Add this line
-    ButtonPress
-}
-
 [System.Serializable]
 public struct PositionData
 {
     public float time;
     public Vector2 position;
+    public string sceneName;
+    public ActionType actionType;
+    public string actionData; // For storing extra info like item names, positions, etc.
+}
+
+public enum ActionType
+{
+    Movement,
+    SceneTransition,
+    ItemPickup,
+    ItemDrop,
+    ButtonPress
 }
 
 public class MovementRecorder : MonoBehaviour
@@ -58,7 +61,10 @@ public class MovementRecorder : MonoBehaviour
             PositionData data = new PositionData
             {
                 time = currentTime,
-                position = position
+                position = position,
+                sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name,
+                actionType = ActionType.Movement,
+                actionData = ""
             };
 
             currentRecording.Add(data);
@@ -66,30 +72,21 @@ public class MovementRecorder : MonoBehaviour
         }
     }
 
-    public void StopRecording()
+    public void RecordSceneTransition(string targetScene)
     {
         if (!isRecording) return;
 
-        Debug.Log($"Stopped recording. Recorded {currentRecording.Count} positions");
-
-        isRecording = false;
-
-        // Save this recording
-        allRecordings.Add(new List<PositionData>(currentRecording));
-    }
-
-    public List<PositionData> GetRecording(int dayIndex)
-    {
-        if (dayIndex >= 0 && dayIndex < allRecordings.Count)
+        PositionData data = new PositionData
         {
-            return allRecordings[dayIndex];
-        }
-        return null;
-    }
+            time = Time.time - dayStartTime,
+            position = transform.position,
+            sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name,
+            actionType = ActionType.SceneTransition,
+            actionData = targetScene
+        };
 
-    public int GetRecordingCount()
-    {
-        return allRecordings.Count;
+        currentRecording.Add(data);
+        Debug.Log($"Recorded scene transition to {targetScene}");
     }
 
     public void RecordItemPickup(string itemName, Vector2 itemPosition)
@@ -124,5 +121,48 @@ public class MovementRecorder : MonoBehaviour
 
         currentRecording.Add(data);
         Debug.Log($"Recorded item drop: {itemName} at {dropPosition}");
+    }
+
+    public void RecordButtonPress(string buttonName)
+    {
+        if (!isRecording) return;
+
+        PositionData data = new PositionData
+        {
+            time = Time.time - dayStartTime,
+            position = transform.position,
+            sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name,
+            actionType = ActionType.ButtonPress,
+            actionData = buttonName
+        };
+
+        currentRecording.Add(data);
+        Debug.Log($"Recorded button press: {buttonName}");
+    }
+
+    public void StopRecording()
+    {
+        if (!isRecording) return;
+
+        Debug.Log($"Stopped recording. Recorded {currentRecording.Count} actions");
+
+        isRecording = false;
+
+        // Save this recording
+        allRecordings.Add(new List<PositionData>(currentRecording));
+    }
+
+    public List<PositionData> GetRecording(int dayIndex)
+    {
+        if (dayIndex >= 0 && dayIndex < allRecordings.Count)
+        {
+            return allRecordings[dayIndex];
+        }
+        return null;
+    }
+
+    public int GetRecordingCount()
+    {
+        return allRecordings.Count;
     }
 }

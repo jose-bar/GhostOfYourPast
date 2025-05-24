@@ -3,8 +3,8 @@ using UnityEngine;
 public class PlayerCarrySystem : MonoBehaviour
 {
     [Header("Carry Settings")]
-    public Transform carryPoint; // Empty child GameObject positioned in front of player
-    public float carryDistance = 1f; // How far in front to carry item
+    public Transform carryPoint;
+    public float carryDistance = 1f;
     public KeyCode interactKey = KeyCode.E;
     public LayerMask carryableLayer = -1;
 
@@ -13,8 +13,10 @@ public class PlayerCarrySystem : MonoBehaviour
 
     private GameObject carriedItem = null;
     private CarryableItem carriedItemScript = null;
-    private bool playerInRange = false;
     private CarryableItem nearbyItem = null;
+
+    // Track nearby door
+    private SceneTransition nearbyDoor = null;
 
     void Start()
     {
@@ -31,6 +33,7 @@ public class PlayerCarrySystem : MonoBehaviour
     void Update()
     {
         CheckForNearbyItems();
+        CheckForNearbyDoors();
         HandleInteraction();
         UpdateCarriedItemPosition();
     }
@@ -70,18 +73,43 @@ public class PlayerCarrySystem : MonoBehaviour
         }
     }
 
+    void CheckForNearbyDoors()
+    {
+        // Check if we're near any door transitions
+        Collider2D[] nearbyColliders = Physics2D.OverlapCircleAll(transform.position, 2f); // Slightly larger range
+        nearbyDoor = null;
+
+        foreach (Collider2D col in nearbyColliders)
+        {
+            SceneTransition door = col.GetComponent<SceneTransition>();
+            if (door != null)
+            {
+                nearbyDoor = door;
+                break;
+            }
+        }
+    }
+
     void HandleInteraction()
     {
         if (Input.GetKeyDown(interactKey))
         {
+            // PRIORITY 1: If carrying item and near door, tell door to try transition
+            if (carriedItem != null && nearbyDoor != null)
+            {
+                Debug.Log("Near door with item - telling door to try transition");
+                nearbyDoor.PlayerTriedInteraction(this); // Pass self as parameter
+                return;
+            }
+
+            // PRIORITY 2: Pick up items
             if (carriedItem == null && nearbyItem != null)
             {
-                // Pick up item
                 PickUpItem(nearbyItem);
             }
-            else if (carriedItem != null)
+            // PRIORITY 3: Drop items (only if not near door)
+            else if (carriedItem != null && nearbyDoor == null)
             {
-                // Drop item
                 DropItem();
             }
         }
@@ -124,10 +152,7 @@ public class PlayerCarrySystem : MonoBehaviour
 
     Vector2 GetDropOffset()
     {
-        // Drop item slightly in front of player based on last movement direction
-        Vector2 dropOffset = Vector2.down * 0.5f; // Default drop below player
-
-        // You could enhance this to remember last movement direction
+        Vector2 dropOffset = Vector2.down * 0.5f;
         return dropOffset;
     }
 
@@ -139,6 +164,7 @@ public class PlayerCarrySystem : MonoBehaviour
         }
     }
 
+    // Public methods for other systems
     public bool IsCarrying()
     {
         return carriedItem != null;
@@ -154,16 +180,34 @@ public class PlayerCarrySystem : MonoBehaviour
         return carriedItem;
     }
 
+    public void ForceDropItem()
+    {
+        if (carriedItem != null)
+        {
+            Vector2 dropPosition = (Vector2)transform.position + GetDropOffset();
+            carriedItemScript.OnDropped(dropPosition);
+            carriedItem = null;
+            carriedItemScript = null;
+        }
+    }
+
     // Visualization for debugging
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireCircle(transform.position, interactionRange);
+        //Gizmos.DrawWireCircle(transform.position, interactionRange);
 
         if (carryPoint != null)
         {
             Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(carryPoint.position, 0.2f);
+            //Gizmos.DrawWireSphere(carryPoint.position, 0.2f);
+        }
+
+        // Show door detection
+        if (nearbyDoor != null)
+        {
+            Gizmos.color = Color.blue;
+            Gizmos.DrawLine(transform.position, nearbyDoor.transform.position);
         }
     }
 }

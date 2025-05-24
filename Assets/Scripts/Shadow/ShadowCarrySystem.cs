@@ -1,14 +1,15 @@
 using UnityEngine;
-using System.Collections.Generic;
 
 public class ShadowCarrySystem : MonoBehaviour
 {
     [Header("Shadow Carry Settings")]
     public Transform shadowCarryPoint;
-    public Material shadowItemMaterial; // Material for shadow copies of items
+    public Material shadowItemMaterial;
+
+    [Header("Debug")]
+    public bool showDebugMessages = true;
 
     private GameObject currentShadowItem = null;
-    private Dictionary<string, GameObject> shadowItemPrefabs = new Dictionary<string, GameObject>();
 
     void Start()
     {
@@ -20,82 +21,123 @@ public class ShadowCarrySystem : MonoBehaviour
             carryPointObj.transform.localPosition = Vector3.up * 1f;
             shadowCarryPoint = carryPointObj.transform;
         }
+
+        if (showDebugMessages)
+        {
+            Debug.Log($"🎭 ShadowCarrySystem initialized on {gameObject.name}");
+        }
     }
 
     public void OnShadowPickupItem(string itemName, Vector2 originalPosition)
     {
-        // Create a shadow copy of the item
-        CreateShadowItem(itemName);
-        Debug.Log($"Shadow picked up: {itemName}");
-    }
-
-    public void OnShadowDropItem(string itemName, Vector2 dropPosition)
-    {
-        // Destroy the shadow copy
-        if (currentShadowItem != null)
+        if (showDebugMessages)
         {
-            Destroy(currentShadowItem);
-            currentShadowItem = null;
+            Debug.Log($"🎭 Shadow trying to pick up: '{itemName}' at {originalPosition}");
         }
-        Debug.Log($"Shadow dropped: {itemName}");
-    }
 
-    void CreateShadowItem(string itemName)
-    {
         // Remove any existing shadow item
         if (currentShadowItem != null)
         {
             Destroy(currentShadowItem);
         }
 
-        // Find the original item to copy its appearance
+        // Find the original item in the scene to copy its appearance
+        CarryableItem originalItem = FindOriginalItem(itemName);
+
+        if (originalItem != null)
+        {
+            CreateShadowItem(originalItem);
+            if (showDebugMessages)
+            {
+                Debug.Log($"✅ Shadow successfully created phantom: '{itemName}'");
+            }
+        }
+        else
+        {
+            if (showDebugMessages)
+            {
+                Debug.LogWarning($"❌ Could not find original item: '{itemName}' in scene");
+            }
+        }
+    }
+
+    public void OnShadowDropItem(string itemName, Vector2 dropPosition)
+    {
+        if (showDebugMessages)
+        {
+            Debug.Log($"🎭 Shadow dropping phantom: '{itemName}' at {dropPosition}");
+        }
+
+        // Destroy the shadow copy
+        if (currentShadowItem != null)
+        {
+            Destroy(currentShadowItem);
+            currentShadowItem = null;
+        }
+    }
+
+    CarryableItem FindOriginalItem(string itemName)
+    {
+        // Find all carryable items in the scene
         CarryableItem[] allItems = FindObjectsOfType<CarryableItem>();
-        GameObject originalItem = null;
+
+        if (showDebugMessages)
+        {
+            Debug.Log($"🔍 Searching for '{itemName}' among {allItems.Length} items in scene");
+            foreach (CarryableItem item in allItems)
+            {
+                Debug.Log($"  - Found item: '{item.itemName}'");
+            }
+        }
 
         foreach (CarryableItem item in allItems)
         {
             if (item.itemName == itemName)
             {
-                originalItem = item.gameObject;
-                break;
+                return item;
             }
         }
 
-        if (originalItem != null)
-        {
-            // Create shadow copy
-            currentShadowItem = CreateShadowCopy(originalItem);
-            currentShadowItem.transform.position = shadowCarryPoint.position;
-        }
+        return null;
     }
 
-    GameObject CreateShadowCopy(GameObject original)
+    void CreateShadowItem(CarryableItem originalItem)
     {
-        // Create a simplified copy for the shadow
-        GameObject shadowCopy = new GameObject($"Shadow_{original.name}");
+        // Create shadow copy
+        currentShadowItem = new GameObject($"👻{originalItem.itemName}");
 
-        // Copy sprite renderer
-        SpriteRenderer originalRenderer = original.GetComponent<SpriteRenderer>();
+        // Copy the sprite renderer
+        SpriteRenderer originalRenderer = originalItem.GetComponent<SpriteRenderer>();
         if (originalRenderer != null)
         {
-            SpriteRenderer shadowRenderer = shadowCopy.AddComponent<SpriteRenderer>();
+            SpriteRenderer shadowRenderer = currentShadowItem.AddComponent<SpriteRenderer>();
             shadowRenderer.sprite = originalRenderer.sprite;
 
-            // Apply shadow material/color
+            // Make it look ghostly - MORE VISIBLE for debugging
             if (shadowItemMaterial != null)
             {
                 shadowRenderer.material = shadowItemMaterial;
             }
             else
             {
-                shadowRenderer.color = new Color(0, 0, 0, 0.5f); // Semi-transparent black
+                // Make it purple and semi-transparent for visibility
+                Color ghostColor = Color.magenta;
+                ghostColor.a = 0.7f; // More opaque for debugging
+                shadowRenderer.color = ghostColor;
             }
+
+            // Make it slightly larger for visibility
+            shadowRenderer.transform.localScale = originalRenderer.transform.localScale * 1.2f;
         }
 
-        // Set as child of shadow carry point
-        shadowCopy.transform.SetParent(shadowCarryPoint);
+        // Position it at carry point
+        currentShadowItem.transform.position = shadowCarryPoint.position;
+        currentShadowItem.transform.SetParent(shadowCarryPoint);
 
-        return shadowCopy;
+        if (showDebugMessages)
+        {
+            Debug.Log($"👻 Created phantom item at position: {shadowCarryPoint.position}");
+        }
     }
 
     void Update()
@@ -104,6 +146,22 @@ public class ShadowCarrySystem : MonoBehaviour
         if (currentShadowItem != null && shadowCarryPoint != null)
         {
             currentShadowItem.transform.position = shadowCarryPoint.position;
+        }
+    }
+
+    // Debug visualization
+    void OnDrawGizmos()
+    {
+        if (shadowCarryPoint != null)
+        {
+            Gizmos.color = Color.magenta;
+            Gizmos.DrawWireSphere(shadowCarryPoint.position, 0.3f);
+        }
+
+        if (currentShadowItem != null)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawLine(transform.position, currentShadowItem.transform.position);
         }
     }
 }

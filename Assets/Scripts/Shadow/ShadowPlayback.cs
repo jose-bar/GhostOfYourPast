@@ -7,6 +7,23 @@ public class ShadowPlayback : MonoBehaviour
     private int currentIndex = 0;
     private float playbackStartTime;
     private bool isPlaying = false;
+    private string currentScene;
+    private ShadowCarrySystem carrySystem;
+
+    [Header("Debug")]
+    public bool showDebugMessages = true;
+
+    void Start()
+    {
+        currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        carrySystem = GetComponent<ShadowCarrySystem>();
+
+        if (carrySystem == null)
+        {
+            Debug.LogError("❌ Shadow missing ShadowCarrySystem! Adding one...");
+            carrySystem = gameObject.AddComponent<ShadowCarrySystem>();
+        }
+    }
 
     public void Initialize(List<PositionData> data)
     {
@@ -14,13 +31,41 @@ public class ShadowPlayback : MonoBehaviour
         currentIndex = 0;
         playbackStartTime = Time.time;
         isPlaying = true;
+        currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
 
-        Debug.Log($"Shadow initialized with {recordingData.Count} positions");
+        Debug.Log($"🎭 Shadow initialized with {recordingData.Count} actions");
 
-        // Start at first position
-        if (recordingData.Count > 0)
+        // Count different action types for debugging
+        int movements = 0, pickups = 0, drops = 0, scenes = 0, buttons = 0;
+        foreach (var action in recordingData)
         {
-            transform.position = recordingData[0].position;
+            switch (action.actionType)
+            {
+                case ActionType.Movement: movements++; break;
+                case ActionType.ItemPickup: pickups++; break;
+                case ActionType.ItemDrop: drops++; break;
+                case ActionType.SceneTransition: scenes++; break;
+                case ActionType.ButtonPress: buttons++; break;
+            }
+        }
+
+        Debug.Log($"📊 Actions: {movements} moves, {pickups} pickups, {drops} drops, {scenes} scenes, {buttons} buttons");
+
+        // Start at first position in current scene
+        FindFirstPositionInScene();
+    }
+
+    void FindFirstPositionInScene()
+    {
+        for (int i = 0; i < recordingData.Count; i++)
+        {
+            if (recordingData[i].sceneName == currentScene)
+            {
+                transform.position = recordingData[i].position;
+                currentIndex = i;
+                Debug.Log($"🎯 Shadow starting at position {recordingData[i].position} in scene {currentScene}");
+                break;
+            }
         }
     }
 
@@ -31,13 +76,15 @@ public class ShadowPlayback : MonoBehaviour
 
         float currentTime = Time.time - playbackStartTime;
 
-        // Find the right position based on time
-        while (currentIndex < recordingData.Count - 1)
+        // Process all actions that should have happened by now
+        while (currentIndex < recordingData.Count)
         {
-            if (currentTime >= recordingData[currentIndex].time)
+            PositionData currentData = recordingData[currentIndex];
+
+            if (currentTime >= currentData.time)
             {
+                ProcessAction(currentData);
                 currentIndex++;
-                transform.position = recordingData[currentIndex].position;
             }
             else
             {
@@ -45,11 +92,140 @@ public class ShadowPlayback : MonoBehaviour
             }
         }
 
-        // Stop when we've played all positions
-        if (currentIndex >= recordingData.Count - 1)
+        // Stop when we've played all actions
+        if (currentIndex >= recordingData.Count)
         {
             isPlaying = false;
-            Debug.Log("Shadow playback complete");
+            Debug.Log("🎭 Shadow playback complete");
         }
+    }
+
+    void ProcessAction(PositionData data)
+    {
+        // Only show shadow if it's in the current scene
+        if (data.sceneName != currentScene)
+        {
+            gameObject.SetActive(false);
+            return;
+        }
+
+        gameObject.SetActive(true);
+
+        if (showDebugMessages)
+        {
+            Debug.Log($"🎭 Shadow action: {data.actionType} at {data.position} with data '{data.actionData}'");
+        }
+
+        switch (data.actionType)
+        {
+            case ActionType.Movement:
+                transform.position = data.position;
+                break;
+
+            case ActionType.SceneTransition:
+                gameObject.SetActive(false);
+                Debug.Log($"🎭 Shadow transitioned to {data.actionData}");
+                break;
+
+            case ActionType.ItemPickup:
+                transform.position = data.position;
+                HandleShadowItemPickup(data.actionData);
+                break;
+
+            case ActionType.ItemDrop:
+                transform.position = data.position;
+                HandleShadowItemDrop(data.actionData);
+                break;
+
+            case ActionType.ButtonPress:
+                transform.position = data.position;
+                Debug.Log($"🎭 Shadow pressed {data.actionData}");
+                break;
+        }
+    }
+
+    void HandleShadowItemPickup(string actionData)
+    {
+        if (showDebugMessages)
+        {
+            Debug.Log($"🔍 Processing shadow pickup: '{actionData}'");
+        }
+
+        // Parse actionData: "itemName|x|y"
+        string[] parts = actionData.Split('|');
+        if (parts.Length >= 3)
+        {
+            string itemName = parts[0];
+            if (float.TryParse(parts[1], out float x) && float.TryParse(parts[2], out float y))
+            {
+                Vector2 originalPosition = new Vector2(x, y);
+
+                if (carrySystem != null)
+                {
+                    carrySystem.OnShadowPickupItem(itemName, originalPosition);
+                    Debug.Log($"✅ Called shadow pickup for '{itemName}' at {originalPosition}");
+                }
+                else
+                {
+                    Debug.LogError("❌ ShadowCarrySystem is null!");
+                }
+            }
+            else
+            {
+                Debug.LogError($"❌ Failed to parse position from '{actionData}'");
+            }
+        }
+        else
+        {
+            Debug.LogError($"❌ Invalid actionData format: '{actionData}'. Expected 'itemName|x|y'");
+        }
+    }
+
+    void HandleShadowItemDrop(string actionData)
+    {
+        if (showDebugMessages)
+        {
+            Debug.Log($"🔍 Processing shadow drop: '{actionData}'");
+        }
+
+        // Parse actionData: "itemName|x|y"
+        string[] parts = actionData.Split('|');
+        if (parts.Length >= 3)
+        {
+            string itemName = parts[0];
+            if (float.TryParse(parts[1], out float x) && float.TryParse(parts[2], out float y))
+            {
+                Vector2 dropPosition = new Vector2(x, y);
+
+                if (carrySystem != null)
+                {
+                    carrySystem.OnShadowDropItem(itemName, dropPosition);
+                    Debug.Log($"✅ Called shadow drop for '{itemName}' at {dropPosition}");
+                }
+                else
+                {
+                    Debug.LogError("❌ ShadowCarrySystem is null!");
+                }
+            }
+        }
+    }
+
+    // Call this when the scene changes to update shadow visibility
+    public void OnSceneChanged(string newSceneName)
+    {
+        currentScene = newSceneName;
+
+        // Check if shadow should be visible in this scene
+        bool shouldBeVisible = false;
+        for (int i = currentIndex; i < recordingData.Count; i++)
+        {
+            if (recordingData[i].sceneName == newSceneName)
+            {
+                shouldBeVisible = true;
+                break;
+            }
+        }
+
+        gameObject.SetActive(shouldBeVisible);
     }
 }

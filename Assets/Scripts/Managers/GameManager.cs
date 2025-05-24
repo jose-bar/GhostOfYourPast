@@ -1,6 +1,3 @@
-// ==================== STEP 1: BASIC SCRIPTS ====================
-
-// 1. GameManager.cs - Attach to empty GameObject called "GameManager"
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,12 +7,15 @@ public class GameManager : MonoBehaviour
 
     [Header("Game State")]
     public int currentDay = 1;
-    public float dayTimer = 60f; // 1 minute for testing
+    public float dayTimer = 60f;
     public bool puzzleCompleted = false;
 
     [Header("UI References")]
     public Text dayText;
     public Text timerText;
+
+    [Header("Debug")]
+    public bool showDebugMessages = true;
 
     private float startTime;
 
@@ -46,7 +46,6 @@ public class GameManager : MonoBehaviour
 
             if (dayTimer <= 0)
             {
-                // Time's up, restart day
                 RestartDay();
             }
         }
@@ -55,38 +54,71 @@ public class GameManager : MonoBehaviour
     public void CompletePuzzle()
     {
         puzzleCompleted = true;
+
+        if (showDebugMessages)
+        {
+            Debug.Log($"🎯 Puzzle completed on day {currentDay}!");
+        }
+
+        // Stop recording BEFORE advancing day
         MovementRecorder.Instance.StopRecording();
 
-        Debug.Log("Puzzle Complete! Moving to next day...");
+        if (showDebugMessages)
+        {
+            Debug.Log("⏰ Waiting 2 seconds before advancing day...");
+        }
 
-        // Wait a moment, then advance day
         Invoke("AdvanceDay", 2f);
     }
 
     void AdvanceDay()
     {
+        if (showDebugMessages)
+        {
+            Debug.Log($"📅 Advancing from day {currentDay} to day {currentDay + 1}");
+        }
+
         currentDay++;
         StartNewDay();
     }
 
     void RestartDay()
     {
-        Debug.Log("Time's up! Restarting day...");
+        if (showDebugMessages)
+        {
+            Debug.Log($"⏰ Time's up! Restarting day {currentDay}");
+        }
         StartNewDay();
     }
 
     void StartNewDay()
     {
-        dayTimer = 60f; // Reset timer
+        if (showDebugMessages)
+        {
+            Debug.Log($"🌅 Starting day {currentDay}");
+        }
+
+        dayTimer = 60f;
         puzzleCompleted = false;
 
         // Start recording new day
         MovementRecorder.Instance.StartNewDay();
 
-        // Create shadow from previous day
+        // Create shadow from previous day (only if we have recordings)
         if (currentDay > 1)
         {
+            if (showDebugMessages)
+            {
+                Debug.Log($"🎭 Attempting to create shadow for day {currentDay}...");
+            }
             ShadowManager.Instance.CreateShadow();
+        }
+        else
+        {
+            if (showDebugMessages)
+            {
+                Debug.Log("🎭 Day 1 - no shadow to create yet");
+            }
         }
 
         UpdateUI();
