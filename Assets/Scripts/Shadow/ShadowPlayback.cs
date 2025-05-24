@@ -108,7 +108,7 @@ public class ShadowPlayback : MonoBehaviour
             gameObject.SetActive(false);
             return;
         }
-
+        
         gameObject.SetActive(true);
 
         if (showDebugMessages)
@@ -139,6 +139,7 @@ public class ShadowPlayback : MonoBehaviour
 
             case ActionType.ButtonPress:
                 transform.position = data.position;
+                HandleShadowButtonPress(data.actionData);
                 Debug.Log($"🎭 Shadow pressed {data.actionData}");
                 break;
         }
@@ -227,5 +228,25 @@ public class ShadowPlayback : MonoBehaviour
         }
 
         gameObject.SetActive(shouldBeVisible);
+    }
+
+    void HandleShadowButtonPress(string objectId)
+    {
+        if (showDebugMessages)
+        {
+            Debug.Log($"🎭 Shadow trying to interact with: '{objectId}'");
+        }
+
+        // Find all interactable objects
+        InteractableObject[] interactables = FindObjectsOfType<InteractableObject>();
+
+        foreach (var interactable in interactables)
+        {
+            if (interactable.objectId == objectId && interactable.canBeTriggereByShadow)
+            {
+                interactable.ShadowInteract();
+                return;
+            }
+        }
     }
 }
