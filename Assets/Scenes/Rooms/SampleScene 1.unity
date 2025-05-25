@@ -5770,7 +5770,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -5297344694181925005, guid: e7f0b94e72095334daf618efe1539309, type: 3}
+  m_Sprite: {fileID: 4505603733540005538, guid: 917542757eb749542873f1a2e0b06b9d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -5790,7 +5790,7 @@ Transform:
   m_GameObject: {fileID: 1383501879}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 5.32439, y: -9.368959, z: 0}
+  m_LocalPosition: {x: 5.32439, y: -9.34, z: 0}
   m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -5876,7 +5876,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1383501879}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 567ed55686adf4c9bb1767b88e9e186a, type: 3}
   m_Name: 
@@ -5896,7 +5896,7 @@ MonoBehaviour:
   requiredItemName: 
   consumeItemOnUse: 0
   interactionSound: {fileID: 0}
-  closedSprite: {fileID: -5297344694181925005, guid: e7f0b94e72095334daf618efe1539309, type: 3}
+  closedSprite: {fileID: 4505603733540005538, guid: 917542757eb749542873f1a2e0b06b9d, type: 3}
   openedSprite: {fileID: 7468998716155306657, guid: e7f0b94e72095334daf618efe1539309, type: 3}
   completesDayOnInteract: 0
   targetScene: 
