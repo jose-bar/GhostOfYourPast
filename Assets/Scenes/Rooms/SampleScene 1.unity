@@ -2403,6 +2403,7 @@ GameObject:
   - component: {fileID: 572358714}
   - component: {fileID: 572358717}
   - component: {fileID: 572358718}
+  - component: {fileID: 572358719}
   m_Layer: 0
   m_Name: Bed
   m_TagString: Untagged
@@ -2539,6 +2540,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cooldownDuration: 5
+--- !u!114 &572358719
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 572358713}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d3da0361744035429b6781b648016fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  yarnNodeName: PassOut
+  pauseDuration: 0
+  onRepeat: 0
+  isKeyTrigger: 0
+  interactKey: 101
 --- !u!1 &591247079
 GameObject:
   m_ObjectHideFlags: 0
@@ -8511,8 +8529,12 @@ PrefabInstance:
       value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 4518172159292855399, guid: 8c61047c518754422b44030a8ae8b584, type: 3}
+      propertyPath: fadeDuration
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4518172159292855399, guid: 8c61047c518754422b44030a8ae8b584, type: 3}
       propertyPath: deathPauseTime
-      value: 5
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 8752985261010800636, guid: 8c61047c518754422b44030a8ae8b584, type: 3}
       propertyPath: m_LocalPosition.x
