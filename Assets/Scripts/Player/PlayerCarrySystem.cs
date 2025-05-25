@@ -74,7 +74,7 @@ public class PlayerCarrySystem : MonoBehaviour
     {
         if (Input.GetKeyDown(interactKey))
         {
-            // Find nearby interactable objects
+            // Find nearby interactables
             Collider2D[] nearbyColliders = Physics2D.OverlapCircleAll(transform.position, interactionRange);
             InteractableObject closestInteractable = null;
             float closestDistance = float.MaxValue;
@@ -93,33 +93,33 @@ public class PlayerCarrySystem : MonoBehaviour
                 }
             }
 
-            // PRIORITY 1: Use carried item on interactable object
+            // Priority 1: Use carried item with interactable object
             if (carriedItem != null && closestInteractable != null)
             {
                 if (closestInteractable.requiresItem &&
                     closestInteractable.requiredItemName == carriedItemScript.itemName)
                 {
-                    // Let the interactable handle the interaction
+                    Debug.Log($"Using {carriedItemScript.itemName} with {closestInteractable.displayName}");
                     closestInteractable.TryInteract();
                     return;
                 }
             }
 
-            // PRIORITY 2: Interact with objects
-            if (closestInteractable != null)
+            // Priority 2: Interact with objects (that don't need items)
+            if (closestInteractable != null && !closestInteractable.requiresItem)
             {
                 closestInteractable.TryInteract();
                 return;
             }
 
-            // PRIORITY 3: Pick up items
+            // Priority 3: Pick up items
             if (carriedItem == null && nearbyItem != null)
             {
                 PickUpItem(nearbyItem);
                 return;
             }
 
-            // PRIORITY 4: Drop carried item
+            // Priority 4: Drop carried item
             if (carriedItem != null)
             {
                 DropItem();
