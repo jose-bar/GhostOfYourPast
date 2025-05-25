@@ -145,7 +145,6 @@ public class MovementRecorder : MonoBehaviour
             time = Time.time - dayStartTime,
             position = transform.position,
             sceneName = CurrentRoomName,
-
             actionType = ActionType.ButtonPress,
             actionData = buttonName
         };

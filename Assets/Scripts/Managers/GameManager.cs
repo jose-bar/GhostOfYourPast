@@ -104,12 +104,16 @@ public class GameManager : MonoBehaviour
         ShadowManager.Instance.CreateShadow();
     }
 
+    [HideInInspector] public float dayStartRealtime;   // in StartNewDay()
+
     void StartNewDay()
     {
         if (showDebugMessages)
         {
             Debug.Log($"🌅 Starting day {currentDay}");
         }
+        dayStartRealtime = Time.time;
+
         DayResetManager.Instance?.ResetDay();
         dayTimer = 60f;
         puzzleCompleted = false;
