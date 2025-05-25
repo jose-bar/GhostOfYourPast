@@ -11,6 +11,8 @@ public class PlayerController2D : MonoBehaviour
     private Animator animator;
     private SpriteRenderer spriteRenderer;
 
+    bool isDeath = false;
+    bool isMoving = false;
 void Start()
 {
     rb = GetComponent<Rigidbody2D>();
@@ -26,7 +28,8 @@ void Update()
 
     movement = movement.normalized;
 
-    bool isMoving = movement.magnitude > 0.01f;
+        
+    isMoving = movement.magnitude > 0.01f;
     animator.SetBool("isMoving", isMoving);
 
     if (isMoving)
