@@ -15,9 +15,6 @@ public class PlayerCarrySystem : MonoBehaviour
     private CarryableItem carriedItemScript = null;
     private CarryableItem nearbyItem = null;
 
-    // Track nearby door
-    private SceneTransition nearbyDoor = null;
-
     void Start()
     {
         // Create carry point if it doesn't exist
@@ -33,7 +30,6 @@ public class PlayerCarrySystem : MonoBehaviour
     void Update()
     {
         CheckForNearbyItems();
-        CheckForNearbyDoors();
         HandleInteraction();
         UpdateCarriedItemPosition();
     }
@@ -73,32 +69,15 @@ public class PlayerCarrySystem : MonoBehaviour
         }
     }
 
-    void CheckForNearbyDoors()
-    {
-        // Check if we're near any door transitions
-        Collider2D[] nearbyColliders = Physics2D.OverlapCircleAll(transform.position, 2f); // Slightly larger range
-        nearbyDoor = null;
-
-        foreach (Collider2D col in nearbyColliders)
-        {
-            SceneTransition door = col.GetComponent<SceneTransition>();
-            if (door != null)
-            {
-                nearbyDoor = door;
-                break;
-            }
-        }
-    }
 
     void HandleInteraction()
     {
         if (Input.GetKeyDown(interactKey))
         {
             // PRIORITY 1: If carrying item and near door, tell door to try transition
-            if (carriedItem != null && nearbyDoor != null)
+            if (carriedItem != null)
             {
-                Debug.Log("Near door with item - telling door to try transition");
-                nearbyDoor.PlayerTriedInteraction(this); // Pass self as parameter
+                // add handle
                 return;
             }
 
@@ -108,7 +87,7 @@ public class PlayerCarrySystem : MonoBehaviour
                 PickUpItem(nearbyItem);
             }
             // PRIORITY 3: Drop items (only if not near door)
-            else if (carriedItem != null && nearbyDoor == null)
+            else if (carriedItem != null)
             {
                 DropItem();
             }
@@ -201,13 +180,6 @@ public class PlayerCarrySystem : MonoBehaviour
         {
             Gizmos.color = Color.green;
             //Gizmos.DrawWireSphere(carryPoint.position, 0.2f);
-        }
-
-        // Show door detection
-        if (nearbyDoor != null)
-        {
-            Gizmos.color = Color.blue;
-            Gizmos.DrawLine(transform.position, nearbyDoor.transform.position);
         }
     }
 }
