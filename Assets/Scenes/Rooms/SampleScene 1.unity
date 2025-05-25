@@ -2583,8 +2583,8 @@ GameObject:
   - component: {fileID: 572358715}
   - component: {fileID: 572358714}
   - component: {fileID: 572358717}
-  - component: {fileID: 572358718}
   - component: {fileID: 572358719}
+  - component: {fileID: 572358720}
   m_Layer: 0
   m_Name: Bed
   m_TagString: Untagged
@@ -2708,19 +2708,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.47820747, y: 0.9017103}
   m_EdgeRadius: 0
---- !u!114 &572358718
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 572358713}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e871f405acd3af74c8ca79fdc5bafd6f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cooldownDuration: 5
 --- !u!114 &572358719
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2738,6 +2725,22 @@ MonoBehaviour:
   onRepeat: 1
   isKeyTrigger: 0
   interactKey: 101
+--- !u!114 &572358720
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 572358713}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4aa3f61f487b144ca83240121cd62b51, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dayNumber: 1
+  checkPuzzleSolved: 1
+  advancesDay: 1
+  cooldownSeconds: 3
 --- !u!1 &591247079
 GameObject:
   m_ObjectHideFlags: 0
@@ -3830,6 +3833,7 @@ MonoBehaviour:
   dayText: {fileID: 0}
   timerText: {fileID: 0}
   showDebugMessages: 1
+  dayStartRealtime: 0
 --- !u!4 &816635708
 Transform:
   m_ObjectHideFlags: 0
