@@ -104,21 +104,16 @@ public class ShadowPlayback : MonoBehaviour
     {
         if (showDebugMessages)
         {
-            Debug.Log($"🎭 Processing shadow action: {data.actionType} at {data.position} in scene {data.sceneName}");
+            Debug.Log($"🎭 Shadow action: {data.actionType} in {data.sceneName}");
         }
 
         switch (data.actionType)
         {
             case ActionType.Movement:
-                // Only show movement if in current scene
                 if (data.sceneName == currentScene)
                 {
                     gameObject.SetActive(true);
                     transform.position = data.position;
-                }
-                else
-                {
-                    gameObject.SetActive(false);
                 }
                 break;
 
@@ -159,45 +154,25 @@ public class ShadowPlayback : MonoBehaviour
     {
         if (showDebugMessages)
         {
-            Debug.Log($"🎭 Shadow transitioning from {currentScene} to {targetScene}");
+            Debug.Log($"🎭 Shadow scene transition to: {targetScene}");
         }
 
-        // Update shadow's current scene
-        string previousScene = currentScene;
+        // Update the shadow's scene tracking
         currentScene = targetScene;
 
-        // Check if shadow should be visible in new scene
-        bool hasActionsInNewScene = false;
+        // Find the shadow's next position in the target scene
         for (int i = currentIndex; i < recordingData.Count; i++)
         {
             if (recordingData[i].sceneName == targetScene)
             {
-                hasActionsInNewScene = true;
-                // Position shadow at first action in new scene
                 transform.position = recordingData[i].position;
+                Debug.Log($"🎭 Shadow positioned at {transform.position} in {targetScene}");
                 break;
             }
         }
 
-        if (hasActionsInNewScene)
-        {
-            // Only show shadow if player is also in this scene
-            if (targetScene == UnityEngine.SceneManagement.SceneManager.GetActiveScene().name)
-            {
-                gameObject.SetActive(true);
-                Debug.Log($"🎭 Shadow appeared in {targetScene}");
-            }
-            else
-            {
-                gameObject.SetActive(false);
-                Debug.Log($"🎭 Shadow in {targetScene} but player not there, hiding shadow");
-            }
-        }
-        else
-        {
-            gameObject.SetActive(false);
-            Debug.Log($"🎭 Shadow has no more actions in {targetScene}, hiding");
-        }
+        // Shadow should always be visible after a scene transition - it will be hidden by other logic if needed
+        gameObject.SetActive(true);
     }
 
     void HandleShadowItemPickup(string actionData)

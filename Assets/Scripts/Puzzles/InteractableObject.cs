@@ -278,12 +278,11 @@ public class InteractableObject : MonoBehaviour
     {
         Debug.Log($"DOOR INTERACTION for {objectId} - player: {isPlayer}");
 
-        // Only disable collider for permanent doors and only when player interacts
-        // This prevents hallway doors from becoming unusable
-        if (isPlayer && doorCollider != null && removeCollisionOnOpen && isOneTimeUse)
+        // Disable door collider if this is a permanent door opening
+        if (doorCollider != null && removeCollisionOnOpen)
         {
             doorCollider.enabled = false;
-            Debug.Log($"Door collider disabled permanently: {doorCollider.name}");
+            Debug.Log($"Door collider disabled: {doorCollider.name}");
         }
 
         // Handle door animation
@@ -389,8 +388,11 @@ public class InteractableObject : MonoBehaviour
 
         if (RoomManager.Instance != null)
         {
-            // Use the new method that won't interfere with shadow playback
-            RoomManager.Instance.PlayerTransitionToRoom(targetScene, spawnPosition);
+            // First switch room for camera
+            RoomManager.Instance.SwitchToRoom(targetScene);
+
+            // Then teleport player to new position 
+            RoomManager.Instance.TeleportPlayer(spawnPosition);
 
             Debug.Log($"Player room transition complete!");
 

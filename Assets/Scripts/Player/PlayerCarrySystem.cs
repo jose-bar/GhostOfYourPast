@@ -69,7 +69,6 @@ public class PlayerCarrySystem : MonoBehaviour
         }
     }
 
-
     void HandleInteraction()
     {
         if (Input.GetKeyDown(interactKey))
@@ -93,41 +92,47 @@ public class PlayerCarrySystem : MonoBehaviour
                 }
             }
 
-            // Priority 1: Use carried item with interactable object
-            if (carriedItem != null && closestInteractable != null)
+            // Priority 1: Use carried item with interactable that requires an item
+            if (carriedItem != null && closestInteractable != null && closestInteractable.requiresItem)
             {
-                if (closestInteractable.requiresItem &&
-                    closestInteractable.requiredItemName == carriedItemScript.itemName)
+                if (closestInteractable.requiredItemName == carriedItemScript.itemName)
                 {
                     Debug.Log($"Using {carriedItemScript.itemName} with {closestInteractable.displayName}");
-                    closestInteractable.TryInteract(this); // Pass this PlayerCarrySystem instance
+                    closestInteractable.TryInteract(this);
+                    return;
+                }
+                else
+                {
+                    Debug.Log($"Wrong item! Need {closestInteractable.requiredItemName}, have {carriedItemScript.itemName}");
                     return;
                 }
             }
 
-            // Priority 2: Interact with objects (that don't need items)
+            // Priority 2: Interact with objects that don't need items
+            // IMPORTANT: Player keeps carrying their item when going through doors
             if (closestInteractable != null && !closestInteractable.requiresItem)
             {
-                closestInteractable.TryInteract();
+                string carryStatus = carriedItem != null ? $" (carrying {carriedItemScript.itemName})" : "";
+                Debug.Log($"Interacting with {closestInteractable.displayName}{carryStatus}");
+                closestInteractable.TryInteract(this);
                 return;
             }
 
-            // Priority 3: Pick up items
+            // Priority 3: Pick up items (only if not carrying anything)
             if (carriedItem == null && nearbyItem != null)
             {
                 PickUpItem(nearbyItem);
                 return;
             }
 
-            // Priority 4: Drop carried item
-            if (carriedItem != null)
+            // Priority 4: Drop carried item (only if no interactable nearby)
+            if (carriedItem != null && closestInteractable == null)
             {
                 DropItem();
                 return;
             }
         }
     }
-
 
     void PickUpItem(CarryableItem item)
     {
@@ -200,6 +205,20 @@ public class PlayerCarrySystem : MonoBehaviour
         {
             Vector2 dropPosition = (Vector2)transform.position + GetDropOffset();
             carriedItemScript.OnDropped(dropPosition);
+
+            // Clear references but don't record this as a normal drop
+            carriedItem = null;
+            carriedItemScript = null;
+        }
+    }
+
+    // Method to consume/destroy carried item without dropping
+    public void ConsumeCarriedItem()
+    {
+        if (carriedItem != null)
+        {
+            Debug.Log($"Consuming carried item: {carriedItemScript.itemName}");
+            Destroy(carriedItem);
             carriedItem = null;
             carriedItemScript = null;
         }
