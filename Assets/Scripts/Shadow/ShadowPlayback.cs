@@ -252,36 +252,44 @@ public class ShadowPlayback : MonoBehaviour
 
     public void TransitionToRoom(string roomName, Vector3 position)
     {
-        // Check if this room exists in the recording
-        bool foundInRecording = false;
+        Debug.Log($"Shadow transitioning to room: {roomName}");
+
+        // Update current scene name
+        currentScene = roomName;
+
+        // Check if we have actions in this scene
+        bool hasActionsInScene = false;
+
         for (int i = 0; i < recordingData.Count; i++)
         {
             if (recordingData[i].sceneName == roomName)
             {
-                foundInRecording = true;
-
-                // Move to this position in the recording
-                currentIndex = i;
-                transform.position = recordingData[i].position;
-
-                // Make shadow visible
-                gameObject.SetActive(true);
+                hasActionsInScene = true;
                 break;
             }
         }
 
-        // If room not in recording, hide shadow
-        if (!foundInRecording)
+        // If we have actions in this scene, position shadow at the first one
+        if (hasActionsInScene)
         {
-            gameObject.SetActive(false);
+            // Find first position in this scene
+            for (int i = 0; i < recordingData.Count; i++)
+            {
+                if (recordingData[i].sceneName == roomName)
+                {
+                    transform.position = recordingData[i].position;
+                    currentIndex = i;
+                    gameObject.SetActive(true);
+                    Debug.Log($"Shadow appeared in {roomName} at {transform.position}");
+                    break;
+                }
+            }
         }
-
-        // Update current scene
-        currentScene = roomName;
-
-        if (showDebugMessages)
+        else
         {
-            Debug.Log($"Shadow transitioned to room: {roomName} (found in recording: {foundInRecording})");
+            // Hide shadow if no actions in this scene
+            gameObject.SetActive(false);
+            Debug.Log($"Shadow has no actions in {roomName}, hiding it");
         }
     }
 }

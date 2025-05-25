@@ -10,7 +10,6 @@ public class RoomManager : MonoBehaviour
         public string roomName;
         public Transform cameraPosition;
         public Vector2 playerSpawnPoint;
-        public Collider2D roomBounds;
     }
 
     public Room[] rooms;
@@ -21,9 +20,14 @@ public class RoomManager : MonoBehaviour
     void Awake()
     {
         if (Instance == null)
+        {
             Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
         else
+        {
             Destroy(gameObject);
+        }
     }
 
     void Start()
@@ -46,12 +50,8 @@ public class RoomManager : MonoBehaviour
             // Try to find the room player is in
             foreach (Room room in rooms)
             {
-                if (room.roomBounds != null &&
-                    room.roomBounds.bounds.Contains(player.transform.position))
-                {
-                    SwitchToRoom(room.roomName);
-                    break;
-                }
+                SwitchToRoom(room.roomName);
+                break;
             }
         }
     }
@@ -69,11 +69,22 @@ public class RoomManager : MonoBehaviour
                 {
                     mainCamera.transform.position = room.cameraPosition.position;
 
-                    // Disable camera following if using CameraController
+                    // Disable camera following
                     CameraController camController = mainCamera.GetComponent<CameraController>();
                     if (camController != null)
                     {
                         camController.enabled = false;
+                    }
+                }
+
+                // Notify shadow of room change
+                GameObject shadow = GameObject.FindWithTag("Shadow");
+                if (shadow != null)
+                {
+                    ShadowPlayback shadowScript = shadow.GetComponent<ShadowPlayback>();
+                    if (shadowScript != null)
+                    {
+                        shadowScript.OnSceneChanged(roomName);
                     }
                 }
 

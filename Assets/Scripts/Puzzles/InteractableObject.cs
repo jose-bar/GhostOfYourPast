@@ -46,6 +46,9 @@ public class InteractableObject : MonoBehaviour
     [Header("Door Settings")]
     public string targetScene = "";
     public Vector3 spawnPosition = Vector3.zero;
+    public Collider2D doorCollider;  // Assign the door's collider
+    public bool removeCollisionOnOpen = true;
+
 
     [Header("Events")]
     public UnityEvent OnInteract;
@@ -111,9 +114,12 @@ public class InteractableObject : MonoBehaviour
                 return;
             }
 
-            // Consume the key if it's a door
+            // IMPORTANT: Consume the key BEFORE the interaction
+            // This fixes the key drop issue
             if (objectType == InteractableType.Door)
             {
+                // Record key was used
+                Debug.Log($"Using {requiredItemName} on {displayName}");
                 playerCarrySystem.ForceDropItem();
             }
         }
@@ -148,13 +154,7 @@ public class InteractableObject : MonoBehaviour
                 if (item != null)
                 {
                     item.SetActive(true);
-
-                    // If it's a CarryableItem, make sure it's set up properly
-                    CarryableItem carryable = item.GetComponent<CarryableItem>();
-                    if (carryable != null)
-                    {
-                        carryable.OnPlayerLeave(); // Reset visual state
-                    }
+                    Debug.Log($"Revealed item: {item.name}");
                 }
             }
         }
@@ -212,61 +212,49 @@ public class InteractableObject : MonoBehaviour
 
     void HandleDoorInteraction()
     {
-        // Handle door opening animation
+        // Handle door animation
         if (hasAnimation && animatedObject != null)
         {
             isOpen = true;
             targetPosition = endPosition;
         }
 
-        // If this is a room transition door
-        if (objectType == InteractableType.Door)
+        // If door has a collider, disable it when open
+        if (doorCollider != null && removeCollisionOnOpen)
         {
-            // Record door interaction for shadow playback
-            MovementRecorder.Instance?.RecordButtonPress(objectId);
+            doorCollider.enabled = false;
+        }
 
-            // Handle required key
-            if (requiresItem && playerCarrySystem != null &&
-                playerCarrySystem.IsCarrying() &&
-                playerCarrySystem.GetCarriedItemName() == requiredItemName)
-            {
-                // Consume the key - this was missing!
-                playerCarrySystem.ForceDropItem();
-
-                // Mark as unlocked if it was a one-time use
-                if (isOneTimeUse)
-                {
-                    hasBeenUsed = true;
-                }
-            }
-
-            // Find the destination room
-            string roomName = gameObject.name; // Default - use door name as room name
-
-            // Or parse from targetScene if you're using that field
-            if (!string.IsNullOrEmpty(targetScene))
-            {
-                roomName = targetScene;
-            }
-
-            // Switch room after a short delay for door animation
-            Invoke("TransitionToNextRoom", 0.5f);
+        // If this is a room transition, trigger it
+        if (!string.IsNullOrEmpty(targetScene))
+        {
+            // Trigger room transition after short animation delay
+            Invoke("TransitionToRoom", 0.5f);
         }
     }
 
-    void TransitionToNextRoom()
+    void TransitionToRoom()
     {
-        // Get RoomManager
-        RoomManager roomManager = RoomManager.Instance;
-        if (roomManager == null)
+        // If we have a room manager, use it
+        RoomManager roomManager = FindObjectOfType<RoomManager>();
+        if (roomManager != null)
         {
-            Debug.LogError("RoomManager not found! Make sure it exists in scene.");
+            roomManager.SwitchToRoom(targetScene);
+            roomManager.TeleportPlayer(spawnPosition);
+
+            // If the player had a key, make sure it's actually dropped
+            if (requiresItem && isOneTimeUse)
+            {
+                // Key is consumed (handled in TryInteract)
+            }
+
+            // Record scene transition for shadow
+            MovementRecorder.Instance?.RecordSceneTransition(targetScene);
             return;
         }
 
-        // Switch camera and teleport player
-        roomManager.SwitchToRoom(targetScene);
-        roomManager.TeleportPlayer(spawnPosition);
+        // Fallback to old scene loading if no room manager
+        UnityEngine.SceneManagement.SceneManager.LoadScene(targetScene);
     }
 
     void ToggleDrawer()
