@@ -249,4 +249,39 @@ public class ShadowPlayback : MonoBehaviour
             }
         }
     }
+
+    public void TransitionToRoom(string roomName, Vector3 position)
+    {
+        // Check if this room exists in the recording
+        bool foundInRecording = false;
+        for (int i = 0; i < recordingData.Count; i++)
+        {
+            if (recordingData[i].sceneName == roomName)
+            {
+                foundInRecording = true;
+
+                // Move to this position in the recording
+                currentIndex = i;
+                transform.position = recordingData[i].position;
+
+                // Make shadow visible
+                gameObject.SetActive(true);
+                break;
+            }
+        }
+
+        // If room not in recording, hide shadow
+        if (!foundInRecording)
+        {
+            gameObject.SetActive(false);
+        }
+
+        // Update current scene
+        currentScene = roomName;
+
+        if (showDebugMessages)
+        {
+            Debug.Log($"Shadow transitioned to room: {roomName} (found in recording: {foundInRecording})");
+        }
+    }
 }

@@ -74,25 +74,60 @@ public class PlayerCarrySystem : MonoBehaviour
     {
         if (Input.GetKeyDown(interactKey))
         {
-            // PRIORITY 1: If carrying item and near door, tell door to try transition
-            if (carriedItem != null)
+            // Find nearby interactable objects
+            Collider2D[] nearbyColliders = Physics2D.OverlapCircleAll(transform.position, interactionRange);
+            InteractableObject closestInteractable = null;
+            float closestDistance = float.MaxValue;
+
+            foreach (Collider2D col in nearbyColliders)
             {
-                // add handle
+                InteractableObject interactable = col.GetComponent<InteractableObject>();
+                if (interactable != null)
+                {
+                    float distance = Vector2.Distance(transform.position, col.transform.position);
+                    if (distance < closestDistance)
+                    {
+                        closestDistance = distance;
+                        closestInteractable = interactable;
+                    }
+                }
+            }
+
+            // PRIORITY 1: Use carried item on interactable object
+            if (carriedItem != null && closestInteractable != null)
+            {
+                if (closestInteractable.requiresItem &&
+                    closestInteractable.requiredItemName == carriedItemScript.itemName)
+                {
+                    // Let the interactable handle the interaction
+                    closestInteractable.TryInteract();
+                    return;
+                }
+            }
+
+            // PRIORITY 2: Interact with objects
+            if (closestInteractable != null)
+            {
+                closestInteractable.TryInteract();
                 return;
             }
 
-            // PRIORITY 2: Pick up items
+            // PRIORITY 3: Pick up items
             if (carriedItem == null && nearbyItem != null)
             {
                 PickUpItem(nearbyItem);
+                return;
             }
-            // PRIORITY 3: Drop items (only if not near door)
-            else if (carriedItem != null)
+
+            // PRIORITY 4: Drop carried item
+            if (carriedItem != null)
             {
                 DropItem();
+                return;
             }
         }
     }
+
 
     void PickUpItem(CarryableItem item)
     {

@@ -16,6 +16,10 @@ public class InteractableObject : MonoBehaviour
     public enum InteractableType { Generic, Door, Drawer, Item, Puzzle, Switch }
     public InteractableType objectType = InteractableType.Generic;
 
+    [Header("Item Reveal")]
+    public GameObject[] itemsToReveal;
+    public bool revealItemsOnInteract = false;
+
     [Header("Item Requirements")]
     public bool requiresItem = false;
     public string requiredItemName = "";
@@ -136,6 +140,25 @@ public class InteractableObject : MonoBehaviour
             MovementRecorder.Instance?.RecordButtonPress(objectId);
         }
 
+        // Reveal items if specified
+        if (revealItemsOnInteract && itemsToReveal != null)
+        {
+            foreach (GameObject item in itemsToReveal)
+            {
+                if (item != null)
+                {
+                    item.SetActive(true);
+
+                    // If it's a CarryableItem, make sure it's set up properly
+                    CarryableItem carryable = item.GetComponent<CarryableItem>();
+                    if (carryable != null)
+                    {
+                        carryable.OnPlayerLeave(); // Reset visual state
+                    }
+                }
+            }
+        }
+
         // Handle type-specific behavior
         HandleTypeSpecificBehavior();
 
@@ -189,10 +212,61 @@ public class InteractableObject : MonoBehaviour
 
     void HandleDoorInteraction()
     {
-        if (!string.IsNullOrEmpty(targetScene))
+        // Handle door opening animation
+        if (hasAnimation && animatedObject != null)
         {
-            UnityEngine.SceneManagement.SceneManager.LoadScene(targetScene);
+            isOpen = true;
+            targetPosition = endPosition;
         }
+
+        // If this is a room transition door
+        if (objectType == InteractableType.Door)
+        {
+            // Record door interaction for shadow playback
+            MovementRecorder.Instance?.RecordButtonPress(objectId);
+
+            // Handle required key
+            if (requiresItem && playerCarrySystem != null &&
+                playerCarrySystem.IsCarrying() &&
+                playerCarrySystem.GetCarriedItemName() == requiredItemName)
+            {
+                // Consume the key - this was missing!
+                playerCarrySystem.ForceDropItem();
+
+                // Mark as unlocked if it was a one-time use
+                if (isOneTimeUse)
+                {
+                    hasBeenUsed = true;
+                }
+            }
+
+            // Find the destination room
+            string roomName = gameObject.name; // Default - use door name as room name
+
+            // Or parse from targetScene if you're using that field
+            if (!string.IsNullOrEmpty(targetScene))
+            {
+                roomName = targetScene;
+            }
+
+            // Switch room after a short delay for door animation
+            Invoke("TransitionToNextRoom", 0.5f);
+        }
+    }
+
+    void TransitionToNextRoom()
+    {
+        // Get RoomManager
+        RoomManager roomManager = RoomManager.Instance;
+        if (roomManager == null)
+        {
+            Debug.LogError("RoomManager not found! Make sure it exists in scene.");
+            return;
+        }
+
+        // Switch camera and teleport player
+        roomManager.SwitchToRoom(targetScene);
+        roomManager.TeleportPlayer(spawnPosition);
     }
 
     void ToggleDrawer()
