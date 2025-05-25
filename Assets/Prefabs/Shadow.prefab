@@ -45,7 +45,6 @@ GameObject:
   - component: {fileID: 3089916935029047739}
   - component: {fileID: 4076387300929852921}
   - component: {fileID: 8147468306354249148}
-  - component: {fileID: 4837414935269220160}
   m_Layer: 0
   m_Name: Shadow
   m_TagString: Player
@@ -201,16 +200,3 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &4837414935269220160
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8395754836249346759}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e871f405acd3af74c8ca79fdc5bafd6f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cooldownDuration: 5

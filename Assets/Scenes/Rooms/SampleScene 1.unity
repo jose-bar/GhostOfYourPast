@@ -3401,7 +3401,7 @@ MonoBehaviour:
   interactKey: 101
   interactionPrompt: Press E to interact
   isOneTimeUse: 0
-  canBeTriggereByShadow: 0
+  canBeTriggereByShadow: 1
   objectType: 1
   itemsToReveal: []
   revealItemsOnInteract: 0
@@ -3741,6 +3741,7 @@ GameObject:
   m_Component:
   - component: {fileID: 772801685}
   - component: {fileID: 772801686}
+  - component: {fileID: 772801687}
   m_Layer: 0
   m_Name: Bedroom - Date
   m_TagString: Untagged
@@ -3818,6 +3819,24 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &772801687
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 772801684}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58d7037aa6b224ea89989ba6438dbe8b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  daySprites:
+  - {fileID: 21300000, guid: 57268883853b32d44b94706d5e6de9ca, type: 3}
+  - {fileID: -5778362013264172918, guid: 4a7eae505d249044ea1b6e7ba4c1180b, type: 3}
+  - {fileID: -2411851968544080914, guid: 4a7eae505d249044ea1b6e7ba4c1180b, type: 3}
+  - {fileID: -6429724776394601889, guid: 4a7eae505d249044ea1b6e7ba4c1180b, type: 3}
+  - {fileID: 5926163571398738758, guid: 4a7eae505d249044ea1b6e7ba4c1180b, type: 3}
 --- !u!4 &779388996 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6435321860705957448, guid: 46470bf24e5c7458ca11e3894ced9717, type: 3}
