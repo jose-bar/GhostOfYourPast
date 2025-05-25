@@ -17,7 +17,12 @@ public class GameManager : MonoBehaviour
     [Header("Debug")]
     public bool showDebugMessages = true;
 
-    private float startTime;
+    bool puzzleSolvedThisDay = false;      // internal flag
+
+    public bool HasPuzzleBeenSolved()      // called by DayEndTrigger
+    {
+        return puzzleSolvedThisDay;
+    }
 
     void Awake()
     {
@@ -46,49 +51,57 @@ public class GameManager : MonoBehaviour
 
             if (dayTimer <= 0)
             {
-                RestartDay();
+                EndDayFailure();
             }
         }
     }
 
     public void CompletePuzzle()
     {
+        if (showDebugMessages)
+            Debug.Log($"✅ Puzzle completed on day {currentDay}");
+
         puzzleCompleted = true;
+        puzzleSolvedThisDay = true;
+    }
 
+    public void EndDaySuccess()          // called by e.g. Bed trigger
+    {
         if (showDebugMessages)
-        {
-            Debug.Log($"🎯 Puzzle completed on day {currentDay}!");
-        }
+            Debug.Log($"🌙  Day {currentDay} SUCCESS → advance");
 
-        // Stop recording BEFORE advancing day
         MovementRecorder.Instance.StopRecording();
-
-        if (showDebugMessages)
-        {
-            Debug.Log("⏰ Waiting 2 seconds before advancing day...");
-        }
-
-        Invoke("AdvanceDay", 2f);
-    }
-
-    void AdvanceDay()
-    {
-        if (showDebugMessages)
-        {
-            Debug.Log($"📅 Advancing from day {currentDay} to day {currentDay + 1}");
-        }
-
         currentDay++;
-        StartNewDay();
-    }
-
-    void RestartDay()
-    {
-        if (showDebugMessages)
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj != null)
         {
-            Debug.Log($"⏰ Time's up! Restarting day {currentDay}");
+            PlayerController2D player = playerObj.GetComponent<PlayerController2D>();
+            if (player != null)
+            {
+                player.KillPlayer();
+            }
         }
         StartNewDay();
+        ShadowManager.Instance.CreateShadow();
+    }
+
+    public void EndDayFailure()          // timer ran out, wrong trigger
+    {
+        if (showDebugMessages)
+            Debug.Log($"💀  Day {currentDay} FAILURE → repeat same day");
+
+        MovementRecorder.Instance.StopRecording();
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj != null)
+        {
+            PlayerController2D player = playerObj.GetComponent<PlayerController2D>();
+            if (player != null)
+            {
+                player.KillPlayer();
+            }
+        }
+        StartNewDay();                   // same day number
+        ShadowManager.Instance.CreateShadow();
     }
 
     void StartNewDay()
@@ -100,6 +113,7 @@ public class GameManager : MonoBehaviour
         DayResetManager.Instance?.ResetDay();
         dayTimer = 60f;
         puzzleCompleted = false;
+        puzzleSolvedThisDay = false;
 
         // Start recording new day
         MovementRecorder.Instance.StartNewDay();
