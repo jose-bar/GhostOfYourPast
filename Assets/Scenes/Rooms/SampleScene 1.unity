@@ -695,7 +695,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   yarnNodeName: StorageRoom
-  pauseDuration: 2
+  pauseDuration: 0
   onRepeat: 1
   isKeyTrigger: 1
   interactKey: 101
@@ -987,7 +987,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   yarnNodeName: LivingRoom
-  pauseDuration: 2
+  pauseDuration: 0
   onRepeat: 0
   isKeyTrigger: 0
   interactKey: 101
@@ -1867,7 +1867,7 @@ Transform:
   m_GameObject: {fileID: 475218381}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -4.09, y: -16.59, z: 0}
+  m_LocalPosition: {x: -8.06, y: -15.33, z: 0}
   m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -2536,7 +2536,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 572358713}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4aa3f61f487b144ca83240121cd62b51, type: 3}
+  m_Script: {fileID: 11500000, guid: e871f405acd3af74c8ca79fdc5bafd6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   cooldownDuration: 5
@@ -2554,13 +2554,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   yarnNodeName: PassOut
   pauseDuration: 0
-  onRepeat: 0
+  onRepeat: 1
   isKeyTrigger: 0
   interactKey: 101
-  dayNumber: 1
-  checkPuzzleSolved: 1
-  advancesDay: 1
-  cooldownSeconds: 3
 --- !u!1 &591247079
 GameObject:
   m_ObjectHideFlags: 0
