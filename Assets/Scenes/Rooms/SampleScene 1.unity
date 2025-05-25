@@ -1201,6 +1201,7 @@ GameObject:
   m_Component:
   - component: {fileID: 296478419}
   - component: {fileID: 296478418}
+  - component: {fileID: 296478420}
   m_Layer: 0
   m_Name: Controller
   m_TagString: Untagged
@@ -1253,7 +1254,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 5
   m_Sprite: {fileID: -1259282470405888649, guid: 7cad7cf27e70fcf40817faeb9551b448, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -1278,6 +1279,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 823471332}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &296478420
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 296478417}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 216beed9050b94e4ab05535530eba18a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  activeDays: 02000000
 --- !u!1 &307905254
 GameObject:
   m_ObjectHideFlags: 0
@@ -5956,7 +5970,6 @@ GameObject:
   - component: {fileID: 1383501880}
   - component: {fileID: 1383501882}
   - component: {fileID: 1383501883}
-  - component: {fileID: 1383501884}
   m_Layer: 0
   m_Name: closet
   m_TagString: Untagged
@@ -6107,53 +6120,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 7
---- !u!114 &1383501884
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1383501879}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 567ed55686adf4c9bb1767b88e9e186a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  objectId: Closet
-  displayName: Closet
-  interactionRange: 1
-  interactKey: 101
-  interactionPrompt: Press E to interact
-  isOneTimeUse: 1
-  canBeTriggereByShadow: 1
-  objectType: 2
-  itemsToReveal:
-  - {fileID: 4530545632265247421, guid: bfc7dbc3bc3494b828e1a355f3fe7494, type: 3}
-  revealItemsOnInteract: 1
-  requiresItem: 0
-  requiredItemName: 
-  consumeItemOnUse: 0
-  interactionSound: {fileID: 0}
-  closedSprite: {fileID: 4505603733540005538, guid: 917542757eb749542873f1a2e0b06b9d, type: 3}
-  openedSprite: {fileID: 7468998716155306657, guid: e7f0b94e72095334daf618efe1539309, type: 3}
-  completesDayOnInteract: 0
-  targetScene: 
-  spawnPosition: {x: 0, y: 0, z: 0}
-  doorCollider: {fileID: 0}
-  removeCollisionOnOpen: 1
-  isDoorPassage: 0
-  OnInteract:
-    m_PersistentCalls:
-      m_Calls: []
-  OnPlayerEnterRange:
-    m_PersistentCalls:
-      m_Calls: []
-  OnPlayerExitRange:
-    m_PersistentCalls:
-      m_Calls: []
-  OnShadowInteract:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1001 &1395654970
 PrefabInstance:
   m_ObjectHideFlags: 0

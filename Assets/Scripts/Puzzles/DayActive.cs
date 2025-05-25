@@ -10,6 +10,10 @@ public class DayActive : MonoBehaviour, IResettable
     void Awake()
     {
         originalState = gameObject.activeSelf;
+    }
+
+    void Start()
+    {
         DayResetManager.Instance.Register(this);
         Apply();
     }
