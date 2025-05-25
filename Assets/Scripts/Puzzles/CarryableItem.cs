@@ -1,27 +1,29 @@
 using UnityEngine;
 
-public class CarryableItem : MonoBehaviour
+public class CarryableItem : MonoBehaviour, IResettable
 {
     [Header("Item Settings")]
     public string itemName = "Item";
     public bool canBeCarried = true;
 
     [Header("Visual Feedback")]
-    public Color normalColor = Color.white;
-    public Color highlightColor = Color.yellow;
     public float bobAmount = 0.1f;
     public float bobSpeed = 2f;
 
-    private SpriteRenderer spriteRenderer;
     private Vector3 originalPosition;
     private bool isBeingCarried = false;
     private bool isHighlighted = false;
     private Rigidbody2D rb;
     private Collider2D col;
+    private Vector3 spawnPosition;
+    private bool wasConsumed = false;     // NEW
+    private SpriteRenderer spriteRenderer;
 
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
+        spawnPosition = transform.position;   // remember original spawn
+        DayResetManager.Instance?.Register(this);   // register for reset
         originalPosition = transform.position;
         rb = GetComponent<Rigidbody2D>();
         col = GetComponent<Collider2D>();
@@ -45,10 +47,6 @@ public class CarryableItem : MonoBehaviour
     public void OnPlayerApproach()
     {
         isHighlighted = true;
-        if (spriteRenderer != null)
-        {
-            spriteRenderer.color = highlightColor;
-        }
 
         // Show pickup prompt
         Debug.Log($"Press E to pick up {itemName}");
@@ -57,10 +55,6 @@ public class CarryableItem : MonoBehaviour
     public void OnPlayerLeave()
     {
         isHighlighted = false;
-        if (spriteRenderer != null && !isBeingCarried)
-        {
-            spriteRenderer.color = normalColor;
-        }
     }
 
     public void OnPickedUp(Transform carrier)
@@ -78,15 +72,6 @@ public class CarryableItem : MonoBehaviour
         {
             col.isTrigger = true;
         }
-
-        // Visual feedback
-        if (spriteRenderer != null)
-        {
-            spriteRenderer.color = normalColor;
-        }
-
-        // Parent to carrier (optional - you might prefer to just move it manually)
-        // transform.SetParent(carrier);
     }
 
     public void OnDropped(Vector2 dropPosition)
@@ -111,4 +96,24 @@ public class CarryableItem : MonoBehaviour
         // Unparent if it was parented
         transform.SetParent(null);
     }
+
+    public void OnConsumed()                 // called instead of Destroy
+    {
+        wasConsumed = true;
+        gameObject.SetActive(false);         // hide but keep object
+    }
+
+    //  IResettable -------------
+    public void ResetState()
+    {
+        wasConsumed = false;
+        transform.position = spawnPosition;
+        originalPosition = spawnPosition;
+        isBeingCarried = false;
+        rb.isKinematic = false;
+        col.isTrigger = false;
+        gameObject.SetActive(true);
+    }
+
+    void OnDestroy() { DayResetManager.Instance?.Unregister(this); }
 }

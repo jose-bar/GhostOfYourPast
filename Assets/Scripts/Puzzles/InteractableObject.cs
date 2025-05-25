@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-public class InteractableObject : MonoBehaviour
+public class InteractableObject : MonoBehaviour, IResettable
 {
     [Header("Identification")]
     public string objectId = "object_01";
@@ -25,21 +25,12 @@ public class InteractableObject : MonoBehaviour
     public string requiredItemName = "";
     public bool consumeItemOnUse = true; // NEW: Whether to consume the item or just drop it
 
-    [Header("Visual Feedback")]
-    public Color normalColor = Color.white;
-    public Color highlightColor = Color.yellow;
-    public Color disabledColor = Color.gray;
-    public bool showPrompt = true;
-
     [Header("Sound")]
     public AudioClip interactionSound;
 
-    [Header("Animation")]
-    public bool hasAnimation = false;
-    public Transform animatedObject;
-    public Vector3 startPosition = Vector3.zero;
-    public Vector3 endPosition = Vector3.zero;
-    public float animationSpeed = 3f;
+    [Header("Sprite Toggle (optional)")]                  // NEW
+    public Sprite closedSprite;
+    public Sprite openedSprite;
 
     [Header("Day Management")]
     public bool completesDayOnInteract = false;
@@ -61,21 +52,26 @@ public class InteractableObject : MonoBehaviour
     private bool playerInRange = false;
     private bool hasBeenUsed = false;
     private SpriteRenderer spriteRenderer;
-    private Vector3 targetPosition;
     private bool isOpen = false;
     private PlayerCarrySystem playerCarrySystem;
+
+    // -------- private snapshot for reset -------------
+    private bool initIsOpen;
+    private bool initHasBeenUsed;
+    private bool initDoorColliderEnabled;
 
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
+        CaptureInitialState();                            // NEW
+        DayResetManager.Instance?.Register(this);         // NEW
+    }
 
-        if (animatedObject != null && hasAnimation)
-        {
-            animatedObject.localPosition = startPosition;
-            targetPosition = startPosition;
-        }
-
-        UpdateVisuals();
+    void CaptureInitialState()                            // NEW
+    {
+        initIsOpen = isOpen;
+        initHasBeenUsed = hasBeenUsed;
+        initDoorColliderEnabled = doorCollider ? doorCollider.enabled : true;
     }
 
     void Update()
@@ -85,15 +81,20 @@ public class InteractableObject : MonoBehaviour
         {
             TryInteract();
         }
+    }
 
-        // Handle animation
-        if (hasAnimation && animatedObject != null)
+    public void ResetState()                              // NEW
+    {
+        isOpen = initIsOpen;
+        hasBeenUsed = initHasBeenUsed;
+
+        // rewind visuals / physics
+        if (doorCollider) doorCollider.enabled = initDoorColliderEnabled;
+
+        // sprite swap back
+        if (spriteRenderer != null && closedSprite != null)
         {
-            animatedObject.localPosition = Vector3.Lerp(
-                animatedObject.localPosition,
-                targetPosition,
-                Time.deltaTime * animationSpeed
-            );
+            spriteRenderer.sprite = closedSprite;
         }
     }
 
@@ -135,7 +136,9 @@ public class InteractableObject : MonoBehaviour
                 carrySystem.ForceDropItem(); // This sets carried item to null
                 if (carriedItem != null)
                 {
-                    Destroy(carriedItem);
+                    var ci = carriedItem.GetComponent<CarryableItem>();
+                    if (ci != null) ci.OnConsumed();
+                    else Destroy(carriedItem);
                 }
             }
             else
@@ -187,9 +190,6 @@ public class InteractableObject : MonoBehaviour
         {
             AudioSource.PlayClipAtPoint(interactionSound, transform.position);
         }
-
-        // Update visuals
-        UpdateVisuals();
 
         // Trigger events
         if (isPlayer)
@@ -285,16 +285,13 @@ public class InteractableObject : MonoBehaviour
             Debug.Log($"Door collider disabled: {doorCollider.name}");
         }
 
-        // Handle door animation
-        if (hasAnimation && animatedObject != null)
-        {
-            isOpen = true;
-            targetPosition = endPosition;
-        }
-
         // CRITICAL FIX: Only teleport player if this interaction came from the player
         if (isPlayer && !string.IsNullOrEmpty(targetScene))
         {
+            // swap sprite
+            if (openedSprite != null && spriteRenderer != null)
+                spriteRenderer.sprite = openedSprite;
+
             Debug.Log($"Player transitioning to {targetScene} at {spawnPosition}");
             Invoke("TransitionPlayerToRoom", 0.5f);
         }
@@ -302,22 +299,24 @@ public class InteractableObject : MonoBehaviour
         {
             Debug.Log($"Shadow opened door {objectId} but did not teleport player");
         }
+
     }
 
     void ToggleDrawer()
     {
-        if (!hasAnimation || animatedObject == null) return;
-
         isOpen = !isOpen;
-        targetPosition = isOpen ? endPosition : startPosition;
+
+        // sprite swap
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.sprite = isOpen ? openedSprite : closedSprite;
+        }
     }
 
     void ToggleSwitch()
     {
-        if (!hasAnimation || animatedObject == null) return;
 
         isOpen = !isOpen;
-        targetPosition = isOpen ? endPosition : startPosition;
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -327,18 +326,7 @@ public class InteractableObject : MonoBehaviour
             playerInRange = true;
             playerCarrySystem = other.GetComponent<PlayerCarrySystem>();
 
-            UpdateVisuals();
             OnPlayerEnterRange?.Invoke();
-
-            if (showPrompt)
-            {
-                string prompt = interactionPrompt;
-                if (requiresItem)
-                {
-                    prompt += $" (Requires: {requiredItemName})";
-                }
-                Debug.Log(prompt);
-            }
         }
     }
 
@@ -349,26 +337,7 @@ public class InteractableObject : MonoBehaviour
             playerInRange = false;
             playerCarrySystem = null;
 
-            UpdateVisuals();
             OnPlayerExitRange?.Invoke();
-        }
-    }
-
-    void UpdateVisuals()
-    {
-        if (spriteRenderer == null) return;
-
-        if (hasBeenUsed && isOneTimeUse)
-        {
-            spriteRenderer.color = disabledColor;
-        }
-        else if (playerInRange)
-        {
-            spriteRenderer.color = highlightColor;
-        }
-        else
-        {
-            spriteRenderer.color = normalColor;
         }
     }
 
@@ -404,4 +373,6 @@ public class InteractableObject : MonoBehaviour
             Debug.LogError("CRITICAL: RoomManager.Instance is null! Room transition failed.");
         }
     }
+
+    void OnDestroy() { DayResetManager.Instance?.Unregister(this); }
 }

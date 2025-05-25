@@ -78,26 +78,12 @@ public class ShadowCarrySystem : MonoBehaviour
 
     CarryableItem FindOriginalItem(string itemName)
     {
-        // Find all carryable items in the scene
-        CarryableItem[] allItems = FindObjectsOfType<CarryableItem>();
-
-        if (showDebugMessages)
+        // ONLY look for real, *active* items
+        foreach (CarryableItem item in FindObjectsOfType<CarryableItem>(true))  // include inactive = true
         {
-            Debug.Log($"🔍 Searching for '{itemName}' among {allItems.Length} items in scene");
-            foreach (CarryableItem item in allItems)
-            {
-                Debug.Log($"  - Found item: '{item.itemName}'");
-            }
+            if (!item.gameObject.activeInHierarchy) continue;   // ignore hidden / consumed originals
+            if (item.itemName == itemName) return item;
         }
-
-        foreach (CarryableItem item in allItems)
-        {
-            if (item.itemName == itemName)
-            {
-                return item;
-            }
-        }
-
         return null;
     }
 

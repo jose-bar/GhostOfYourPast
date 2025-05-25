@@ -97,7 +97,7 @@ public class GameManager : MonoBehaviour
         {
             Debug.Log($"🌅 Starting day {currentDay}");
         }
-
+        DayResetManager.Instance?.ResetDay();
         dayTimer = 60f;
         puzzleCompleted = false;
 
