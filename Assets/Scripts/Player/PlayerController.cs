@@ -71,6 +71,12 @@ public class PlayerController2D : MonoBehaviour
         animator.SetBool("isDead", true);
         animator.SetBool("isMoving", false);
 
+        if (dialogueRunner != null && dialogueRunner.IsDialogueRunning)
+        {
+            dialogueRunner.Stop();
+            Debug.Log("Dialogue stopped due to player death.");
+        }
+
         StartCoroutine(HandleDeath());
     }
 

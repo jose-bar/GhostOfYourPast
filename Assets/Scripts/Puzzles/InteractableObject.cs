@@ -66,14 +66,17 @@ public class InteractableObject : MonoBehaviour, IResettable
     // run-time only
     private bool isUnlocked = false;               // PATCH #1
 
+    private AudioSource audioSource;
     void Start()
     {
         //---- we catch both root AND child sprite renderers now ------------
         spriteRenderer = GetComponent<SpriteRenderer>();
+        audioSource = GetComponent<AudioSource>();
         if (spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>();  // PATCH #2
 
         CaptureInitialState();
         DayResetManager.Instance?.Register(this);
+        
     }
 
     void CaptureInitialState()
@@ -204,9 +207,10 @@ public class InteractableObject : MonoBehaviour, IResettable
         HandleTypeSpecificBehavior(isPlayer);
 
         // Play sound if available
-        if (interactionSound != null)
+        if (interactionSound != null && audioSource != null)
         {
-            AudioSource.PlayClipAtPoint(interactionSound, transform.position);
+            audioSource.clip = interactionSound;
+            audioSource.Play();
         }
 
         // Trigger events
