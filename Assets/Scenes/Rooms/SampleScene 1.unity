@@ -1113,12 +1113,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 237604995}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 17.52, y: 14.08, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 7.1318808, y: -0.67626, z: 0}
   m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 991548984}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &251390291
 PrefabInstance:
@@ -1617,7 +1617,7 @@ Transform:
   m_GameObject: {fileID: 475218381}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 5.132764, y: -11.93626, z: 0}
+  m_LocalPosition: {x: -8.06, y: -15.33, z: 0}
   m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -2716,12 +2716,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 682315761}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 20.871185, y: 13.82, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 10.483066, y: -0.9362602, z: 0}
   m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 1
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 991548984}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &682588914
 GameObject:
@@ -2837,6 +2837,7 @@ MonoBehaviour:
   revealItemsOnInteract: 0
   requiresItem: 1
   requiredItemName: Key
+  consumeItemOnUse: 1
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   disabledColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
@@ -2852,6 +2853,7 @@ MonoBehaviour:
   spawnPosition: {x: -2, y: 18, z: 0}
   doorCollider: {fileID: 682588918}
   removeCollisionOnOpen: 1
+  isDoorPassage: 0
   OnInteract:
     m_PersistentCalls:
       m_Calls: []
@@ -3319,12 +3321,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 798607735}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 16.41, y: 14.010902, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 6.02188, y: -0.7453575, z: 0}
   m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 991548984}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &805799368 stripped
 GameObject:
@@ -3924,7 +3926,7 @@ Transform:
   m_GameObject: {fileID: 991548983}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 10.38812, y: 14.75626, z: 0}
+  m_LocalPosition: {x: 23.42, y: 15.68, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3933,6 +3935,11 @@ Transform:
   - {fileID: 1589409613}
   - {fileID: 475218382}
   - {fileID: 2103504232}
+  - {fileID: 237604997}
+  - {fileID: 798607737}
+  - {fileID: 682315763}
+  - {fileID: 1933095254}
+  - {fileID: 1923180082}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1002507928
@@ -5338,6 +5345,7 @@ GameObject:
   - component: {fileID: 1383501880}
   - component: {fileID: 1383501882}
   - component: {fileID: 1383501883}
+  - component: {fileID: 1383501884}
   m_Layer: 0
   m_Name: closet
   m_TagString: Untagged
@@ -5389,7 +5397,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 4505603733540005538, guid: 917542757eb749542873f1a2e0b06b9d, type: 3}
+  m_Sprite: {fileID: -5297344694181925005, guid: e7f0b94e72095334daf618efe1539309, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -5488,6 +5496,60 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 7
+--- !u!114 &1383501884
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1383501879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 567ed55686adf4c9bb1767b88e9e186a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objectId: Closet
+  displayName: Closet
+  interactionRange: 1
+  interactKey: 101
+  interactionPrompt: Press E to interact
+  isOneTimeUse: 1
+  canBeTriggereByShadow: 1
+  objectType: 0
+  itemsToReveal:
+  - {fileID: 2050643288}
+  revealItemsOnInteract: 1
+  requiresItem: 0
+  requiredItemName: 
+  consumeItemOnUse: 0
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  disabledColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  showPrompt: 1
+  interactionSound: {fileID: 0}
+  hasAnimation: 1
+  animatedObject: {fileID: 0}
+  startPosition: {x: 0, y: 0, z: 0}
+  endPosition: {x: 0, y: 0, z: 0}
+  animationSpeed: 3
+  completesDayOnInteract: 0
+  targetScene: 
+  spawnPosition: {x: 0, y: 0, z: 0}
+  doorCollider: {fileID: 0}
+  removeCollisionOnOpen: 1
+  isDoorPassage: 0
+  OnInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPlayerEnterRange:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPlayerExitRange:
+    m_PersistentCalls:
+      m_Calls: []
+  OnShadowInteract:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1001 &1395654970
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5496,6 +5558,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 96604283}
     m_Modifications:
+    - target: {fileID: 174249463155071593, guid: 5d77c3c8e6669498083d3c3dbdef5029, type: 3}
+      propertyPath: objectId
+      value: LivingRoomBPath
+      objectReference: {fileID: 0}
     - target: {fileID: 174249463155071593, guid: 5d77c3c8e6669498083d3c3dbdef5029, type: 3}
       propertyPath: targetScene
       value: Living Room-C
@@ -6563,6 +6629,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 25546557}
     m_Modifications:
     - target: {fileID: 174249463155071593, guid: 5d77c3c8e6669498083d3c3dbdef5029, type: 3}
+      propertyPath: objectId
+      value: KitchenPath
+      objectReference: {fileID: 0}
+    - target: {fileID: 174249463155071593, guid: 5d77c3c8e6669498083d3c3dbdef5029, type: 3}
       propertyPath: targetScene
       value: Kitchen
       objectReference: {fileID: 0}
@@ -6580,7 +6650,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3070710302342387007, guid: 5d77c3c8e6669498083d3c3dbdef5029, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -10.27
+      value: -10.3
       objectReference: {fileID: 0}
     - target: {fileID: 3070710302342387007, guid: 5d77c3c8e6669498083d3c3dbdef5029, type: 3}
       propertyPath: m_LocalPosition.y
@@ -6961,12 +7031,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1923180080}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 17.3, y: 17.12, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 6.9118795, y: 2.363741, z: 0}
   m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 1
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 991548984}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1933095251
 GameObject:
@@ -7012,6 +7082,7 @@ MonoBehaviour:
   revealItemsOnInteract: 0
   requiresItem: 0
   requiredItemName: 
+  consumeItemOnUse: 1
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   disabledColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
@@ -7027,6 +7098,7 @@ MonoBehaviour:
   spawnPosition: {x: 0, y: 0, z: 0}
   doorCollider: {fileID: 0}
   removeCollisionOnOpen: 1
+  isDoorPassage: 0
   OnInteract:
     m_PersistentCalls:
       m_Calls: []
@@ -7107,7 +7179,7 @@ Transform:
   m_LocalScale: {x: 3, y: 3, z: 4}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 991548984}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!70 &1933095255
 CapsuleCollider2D:
@@ -7745,7 +7817,7 @@ Transform:
   m_GameObject: {fileID: 2050643288}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.59439003, y: -9.778959, z: 0}
+  m_LocalPosition: {x: 0.45, y: -9.75, z: 0}
   m_LocalScale: {x: 3, y: 3, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -8093,6 +8165,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 25546557}
     m_Modifications:
+    - target: {fileID: 174249463155071593, guid: 5d77c3c8e6669498083d3c3dbdef5029, type: 3}
+      propertyPath: objectId
+      value: BedroomPath
+      objectReference: {fileID: 0}
     - target: {fileID: 1216918471913154147, guid: 5d77c3c8e6669498083d3c3dbdef5029, type: 3}
       propertyPath: m_Name
       value: HallWay
@@ -8388,8 +8464,4 @@ SceneRoots:
   - {fileID: 798607737}
   - {fileID: 682315763}
   - {fileID: 1933095254}
-  - {fileID: 894756664}
   - {fileID: 1923180082}
-  - {fileID: 183454923}
-  - {fileID: 130580425}
-  - {fileID: 175936638}
