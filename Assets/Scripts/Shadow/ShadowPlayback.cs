@@ -218,12 +218,15 @@ public class ShadowPlayback : MonoBehaviour
 
         // Check if shadow should be visible in this scene
         bool shouldBeVisible = false;
-        for (int i = currentIndex; i < recordingData.Count; i++)
+        if (recordingData != null)
         {
-            if (recordingData[i].sceneName == newSceneName)
+            for (int i = currentIndex; i < recordingData.Count; i++)
             {
-                shouldBeVisible = true;
-                break;
+                if (recordingData[i].sceneName == newSceneName)
+                {
+                    shouldBeVisible = true;
+                    break;
+                }
             }
         }
 

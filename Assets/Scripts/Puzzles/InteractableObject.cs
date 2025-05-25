@@ -96,32 +96,34 @@ public class InteractableObject : MonoBehaviour
         }
     }
 
-    public void TryInteract()
+    public void TryInteract(PlayerCarrySystem externalCarrySystem = null)
     {
         if (hasBeenUsed && isOneTimeUse) return;
+
+        // *** FIX: Use provided carry system or the one from trigger ***
+        PlayerCarrySystem carrySystem = externalCarrySystem ?? playerCarrySystem;
 
         bool canInteract = true;
 
         // Check for required item
         if (requiresItem)
         {
-            if (playerCarrySystem == null) return;
+            if (carrySystem == null)
+            {
+                Debug.LogError($"No PlayerCarrySystem available for {displayName}");
+                return;
+            }
 
-            if (!playerCarrySystem.IsCarrying() ||
-                playerCarrySystem.GetCarriedItemName() != requiredItemName)
+            if (!carrySystem.IsCarrying() ||
+                carrySystem.GetCarriedItemName() != requiredItemName)
             {
                 Debug.Log($"Need {requiredItemName} to interact with {displayName}");
                 return;
             }
 
-            // IMPORTANT: Consume the key BEFORE the interaction
-            // This fixes the key drop issue
-            if (objectType == InteractableType.Door)
-            {
-                // Record key was used
-                Debug.Log($"Using {requiredItemName} on {displayName}");
-                playerCarrySystem.ForceDropItem();
-            }
+            // Consume the key
+            Debug.Log($"Using {requiredItemName} on {displayName}");
+            carrySystem.ForceDropItem();
         }
 
         if (canInteract)
@@ -153,8 +155,47 @@ public class InteractableObject : MonoBehaviour
             {
                 if (item != null)
                 {
+                    // Make sure item is active
                     item.SetActive(true);
-                    Debug.Log($"Revealed item: {item.name}");
+
+                    // Ensure the item has a collider
+                    Collider2D itemCollider = item.GetComponent<Collider2D>();
+                    if (itemCollider == null)
+                    {
+                        Debug.LogWarning($"Item {item.name} has no collider! Adding one...");
+                        BoxCollider2D newCollider = item.AddComponent<BoxCollider2D>();
+                        newCollider.isTrigger = true;
+                        newCollider.size = new Vector2(0.5f, 0.5f);
+                    }
+                    else
+                    {
+                        // Make sure the collider is enabled
+                        itemCollider.enabled = true;
+                        itemCollider.isTrigger = true;  // Must be trigger to be picked up
+                    }
+
+                    // Make sure item has CarryableItem component
+                    CarryableItem carryableItem = item.GetComponent<CarryableItem>();
+                    if (carryableItem == null)
+                    {
+                        Debug.LogWarning($"Item {item.name} has no CarryableItem component! Adding one...");
+                        carryableItem = item.AddComponent<CarryableItem>();
+                        carryableItem.itemName = item.name;
+                    }
+
+                    // Force SpriteRenderer to be visible
+                    SpriteRenderer renderer = item.GetComponent<SpriteRenderer>();
+                    if (renderer != null)
+                    {
+                        renderer.enabled = true;
+                        renderer.color = Color.white; // Ensure full visibility
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Item {item.name} has no SpriteRenderer! Items need sprites.");
+                    }
+
+                    Debug.Log($"Successfully revealed and set up item: {item.name}");
                 }
             }
         }
@@ -212,6 +253,34 @@ public class InteractableObject : MonoBehaviour
 
     void HandleDoorInteraction()
     {
+        Debug.Log($"DOOR INTERACTION for {objectId} - starting door handling");
+
+        // *** IMMEDIATE FIX: Disable door collider RIGHT AWAY ***
+        if (doorCollider != null)
+        {
+            doorCollider.enabled = false;
+            Debug.Log($"SUCCESS: Door collider disabled: {doorCollider.name}");
+        }
+        else
+        {
+            Debug.LogWarning($"WARNING: Door collider not assigned for {objectId}! Using fallback...");
+
+            // Fallback: Try to find and disable ANY collider on this object
+            Collider2D[] colliders = GetComponents<Collider2D>();
+            if (colliders.Length > 0)
+            {
+                foreach (Collider2D col in colliders)
+                {
+                    col.enabled = false;
+                    Debug.Log($"Disabled collider via fallback: {col.name}");
+                }
+            }
+            else
+            {
+                Debug.LogError($"CRITICAL ERROR: No colliders found on door {objectId}!");
+            }
+        }
+
         // Handle door animation
         if (hasAnimation && animatedObject != null)
         {
@@ -219,42 +288,12 @@ public class InteractableObject : MonoBehaviour
             targetPosition = endPosition;
         }
 
-        // If door has a collider, disable it when open
-        if (doorCollider != null && removeCollisionOnOpen)
-        {
-            doorCollider.enabled = false;
-        }
-
         // If this is a room transition, trigger it
         if (!string.IsNullOrEmpty(targetScene))
         {
-            // Trigger room transition after short animation delay
+            Debug.Log($"Planning room transition to {targetScene} at {spawnPosition}");
             Invoke("TransitionToRoom", 0.5f);
         }
-    }
-
-    void TransitionToRoom()
-    {
-        // If we have a room manager, use it
-        RoomManager roomManager = FindObjectOfType<RoomManager>();
-        if (roomManager != null)
-        {
-            roomManager.SwitchToRoom(targetScene);
-            roomManager.TeleportPlayer(spawnPosition);
-
-            // If the player had a key, make sure it's actually dropped
-            if (requiresItem && isOneTimeUse)
-            {
-                // Key is consumed (handled in TryInteract)
-            }
-
-            // Record scene transition for shadow
-            MovementRecorder.Instance?.RecordSceneTransition(targetScene);
-            return;
-        }
-
-        // Fallback to old scene loading if no room manager
-        UnityEngine.SceneManagement.SceneManager.LoadScene(targetScene);
     }
 
     void ToggleDrawer()
@@ -332,4 +371,28 @@ public class InteractableObject : MonoBehaviour
         Debug.Log($"Shadow interacted with {displayName}");
         Interact(false);
     }
+
+    void TransitionToRoom()
+    {
+        Debug.Log($"EXECUTING TRANSITION to {targetScene} at {spawnPosition}");
+
+        if (RoomManager.Instance != null)
+        {
+            // First switch room for camera
+            RoomManager.Instance.SwitchToRoom(targetScene);
+
+            // Then teleport player to new position 
+            RoomManager.Instance.TeleportPlayer(spawnPosition);
+
+            Debug.Log($"Room transition complete!");
+
+            // Notify shadow system
+            MovementRecorder.Instance?.RecordSceneTransition(targetScene);
+        }
+        else
+        {
+            Debug.LogError("CRITICAL: RoomManager.Instance is null! Room transition failed.");
+        }
+    }
+
 }

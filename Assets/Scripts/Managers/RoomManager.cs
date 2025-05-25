@@ -64,18 +64,10 @@ public class RoomManager : MonoBehaviour
             {
                 currentRoom = room;
 
-                // Move camera to room position
-                if (mainCamera != null && room.cameraPosition != null)
-                {
-                    mainCamera.transform.position = room.cameraPosition.position;
+                // DON'T move or disable the camera - just teleport player
+                // The camera will follow due to CameraController
 
-                    // Disable camera following
-                    CameraController camController = mainCamera.GetComponent<CameraController>();
-                    if (camController != null)
-                    {
-                        camController.enabled = false;
-                    }
-                }
+                Debug.Log($"Switched to room: {roomName}");
 
                 // Notify shadow of room change
                 GameObject shadow = GameObject.FindWithTag("Shadow");
@@ -88,7 +80,6 @@ public class RoomManager : MonoBehaviour
                     }
                 }
 
-                Debug.Log($"Switched to room: {roomName}");
                 return;
             }
         }
@@ -96,13 +87,30 @@ public class RoomManager : MonoBehaviour
         Debug.LogWarning($"Room not found: {roomName}");
     }
 
+
     public void TeleportPlayer(Vector2 position)
     {
         GameObject player = GameObject.FindWithTag("Player");
         if (player != null)
         {
+            Debug.Log($"Teleporting player from {player.transform.position} to {position}");
+
+            // Force position directly with multiple approaches for robustness
             player.transform.position = position;
-            Debug.Log($"Player teleported to {position}");
+
+            // Also update rigidbody if it exists
+            Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector2.zero;
+                rb.position = position;
+            }
+
+            Debug.Log($"Player teleportation complete - now at {player.transform.position}");
+        }
+        else
+        {
+            Debug.LogError("Player not found! Cannot teleport.");
         }
     }
 
