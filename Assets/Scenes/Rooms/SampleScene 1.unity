@@ -557,6 +557,7 @@ Transform:
   - {fileID: 1383501881}
   - {fileID: 368810637}
   - {fileID: 2050643290}
+  - {fileID: 1368104704}
   - {fileID: 712141092}
   - {fileID: 111970297}
   - {fileID: 1002507930}
@@ -1991,6 +1992,7 @@ MonoBehaviour:
   revealItemsOnInteract: 0
   requiresItem: 1
   requiredItemName: Key
+  consumeItemOnUse: 1
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   disabledColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
@@ -2006,6 +2008,7 @@ MonoBehaviour:
   spawnPosition: {x: -2, y: 18, z: 0}
   doorCollider: {fileID: 682588918}
   removeCollisionOnOpen: 1
+  isDoorPassage: 0
   OnInteract:
     m_PersistentCalls:
       m_Calls: []
@@ -4103,6 +4106,177 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6435321860705957448, guid: 46470bf24e5c7458ca11e3894ced9717, type: 3}
   m_PrefabInstance: {fileID: 1361827449}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1368104703
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1368104704}
+  - component: {fileID: 1368104708}
+  - component: {fileID: 1368104707}
+  - component: {fileID: 1368104706}
+  - component: {fileID: 1368104705}
+  m_Layer: 0
+  m_Name: Key (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1368104704
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1368104703}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.59439003, y: -9.778959, z: 0}
+  m_LocalScale: {x: 3, y: 3, z: 1}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 184616109}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1368104705
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1368104703}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 554079ffa43c54119bd256ead89dcb5d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemName: Key
+  canBeCarried: 1
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
+  highlightColor: {r: 0.46181095, g: 0.8962264, b: 0.43543077, a: 1}
+  bobAmount: 0.05
+  bobSpeed: 2
+--- !u!58 &1368104706
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1368104703}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_Radius: 0.1
+--- !u!50 &1368104707
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1368104703}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 7
+--- !u!212 &1368104708
+SpriteRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1368104703}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 3
+  m_Sprite: {fileID: -8285689003176204195, guid: 4db545fdd2c8e654fb93534e90ad8328, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 1, y: 1}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
+  m_SpriteSortPoint: 0
 --- !u!1 &1383501879
 GameObject:
   m_ObjectHideFlags: 0
@@ -4273,6 +4447,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 96604283}
     m_Modifications:
+    - target: {fileID: 174249463155071593, guid: 5d77c3c8e6669498083d3c3dbdef5029, type: 3}
+      propertyPath: objectId
+      value: LivingRoomBPath
+      objectReference: {fileID: 0}
     - target: {fileID: 174249463155071593, guid: 5d77c3c8e6669498083d3c3dbdef5029, type: 3}
       propertyPath: targetScene
       value: Living Room-C
@@ -5253,6 +5431,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 25546557}
     m_Modifications:
     - target: {fileID: 174249463155071593, guid: 5d77c3c8e6669498083d3c3dbdef5029, type: 3}
+      propertyPath: objectId
+      value: KitchenPath
+      objectReference: {fileID: 0}
+    - target: {fileID: 174249463155071593, guid: 5d77c3c8e6669498083d3c3dbdef5029, type: 3}
       propertyPath: targetScene
       value: Kitchen
       objectReference: {fileID: 0}
@@ -5589,6 +5771,7 @@ MonoBehaviour:
   revealItemsOnInteract: 0
   requiresItem: 0
   requiredItemName: 
+  consumeItemOnUse: 1
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   disabledColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
@@ -5604,6 +5787,7 @@ MonoBehaviour:
   spawnPosition: {x: 0, y: 0, z: 0}
   doorCollider: {fileID: 0}
   removeCollisionOnOpen: 1
+  isDoorPassage: 0
   OnInteract:
     m_PersistentCalls:
       m_Calls: []
@@ -6478,6 +6662,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 25546557}
     m_Modifications:
+    - target: {fileID: 174249463155071593, guid: 5d77c3c8e6669498083d3c3dbdef5029, type: 3}
+      propertyPath: objectId
+      value: BedroomPath
+      objectReference: {fileID: 0}
     - target: {fileID: 1216918471913154147, guid: 5d77c3c8e6669498083d3c3dbdef5029, type: 3}
       propertyPath: m_Name
       value: HallWay

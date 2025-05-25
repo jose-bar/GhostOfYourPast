@@ -45,18 +45,19 @@ public class RoomManager : MonoBehaviour
         if (player != null && rooms.Length > 0)
         {
             // Default to first room
-            SwitchToRoom(rooms[0].roomName);
+            SwitchToRoom(rooms[0].roomName, false); // Don't notify shadow during initial setup
 
             // Try to find the room player is in
             foreach (Room room in rooms)
             {
-                SwitchToRoom(room.roomName);
+                SwitchToRoom(room.roomName, false); // Don't notify shadow during initial setup
                 break;
             }
         }
     }
 
-    public void SwitchToRoom(string roomName)
+    // Overloaded method to control shadow notification
+    public void SwitchToRoom(string roomName, bool notifyShadow = true)
     {
         foreach (Room room in rooms)
         {
@@ -64,19 +65,19 @@ public class RoomManager : MonoBehaviour
             {
                 currentRoom = room;
 
-                // DON'T move or disable the camera - just teleport player
-                // The camera will follow due to CameraController
-
                 Debug.Log($"Switched to room: {roomName}");
 
-                // Notify shadow of room change
-                GameObject shadow = GameObject.FindWithTag("Shadow");
-                if (shadow != null)
+                // Only notify shadow if requested (prevents interference during player-initiated transitions)
+                if (notifyShadow)
                 {
-                    ShadowPlayback shadowScript = shadow.GetComponent<ShadowPlayback>();
-                    if (shadowScript != null)
+                    GameObject shadow = GameObject.FindWithTag("Shadow");
+                    if (shadow != null)
                     {
-                        shadowScript.OnSceneChanged(roomName);
+                        ShadowPlayback shadowScript = shadow.GetComponent<ShadowPlayback>();
+                        if (shadowScript != null)
+                        {
+                            shadowScript.OnSceneChanged(roomName);
+                        }
                     }
                 }
 
@@ -87,6 +88,11 @@ public class RoomManager : MonoBehaviour
         Debug.LogWarning($"Room not found: {roomName}");
     }
 
+    // Original method maintained for backward compatibility
+    public void SwitchToRoom(string roomName)
+    {
+        SwitchToRoom(roomName, true);
+    }
 
     public void TeleportPlayer(Vector2 position)
     {
@@ -112,6 +118,18 @@ public class RoomManager : MonoBehaviour
         {
             Debug.LogError("Player not found! Cannot teleport.");
         }
+    }
+
+    // Method specifically for player-initiated room transitions (won't interfere with shadow)
+    public void PlayerTransitionToRoom(string roomName, Vector2 position)
+    {
+        Debug.Log($"Player transitioning to room: {roomName}");
+
+        // Switch room without notifying shadow (shadow manages its own scene transitions)
+        SwitchToRoom(roomName, false);
+
+        // Teleport player
+        TeleportPlayer(position);
     }
 
     public Room GetCurrentRoom()
