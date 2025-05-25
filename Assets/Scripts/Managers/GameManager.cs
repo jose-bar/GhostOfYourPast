@@ -142,4 +142,24 @@ public class GameManager : MonoBehaviour
             timerText.text = "Time: " + seconds;
         }
     }
+
+
+    public void FreezeGameForSeconds(float duration)
+    {
+        StartCoroutine(FreezeCoroutine(duration));
+    }
+
+    private System.Collections.IEnumerator FreezeCoroutine(float duration)
+    {
+        if (showDebugMessages)
+            Debug.Log($"⏸️ Freezing game for {duration} seconds...");
+
+        Time.timeScale = 0f;
+        yield return new WaitForSecondsRealtime(duration);
+        Time.timeScale = 1f;
+
+        if (showDebugMessages)
+            Debug.Log("▶️ Game resumed");
+    }
 }
+
