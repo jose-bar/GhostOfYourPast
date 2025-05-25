@@ -98,17 +98,17 @@ public class SceneTransition : MonoBehaviour
 
     void Update()
     {
-        UpdateDoorVisual();
+        // UpdateDoorVisual();
 
-        // Fallback: If player presses E while in range (in case direct communication fails)
-        if (playerInRange && Input.GetKeyDown(KeyCode.E))
-        {
-            if (showDebugMessages)
-            {
-                Debug.Log($"🔑 Fallback E press detected at door '{gameObject.name}'");
-            }
-            TryTransition(playerCarrySystem); // Use stored reference for fallback
-        }
+        // // Fallback: If player presses E while in range (in case direct communication fails)
+        // if (playerInRange && Input.GetKeyDown(KeyCode.E))
+        // {
+        //     if (showDebugMessages)
+        //     {
+        //         Debug.Log($"🔑 Fallback E press detected at door '{gameObject.name}'");
+        //     }
+        //     TryTransition(playerCarrySystem); // Use stored reference for fallback
+        // }
     }
 
     // NEW: Direct communication method called by PlayerCarrySystem
