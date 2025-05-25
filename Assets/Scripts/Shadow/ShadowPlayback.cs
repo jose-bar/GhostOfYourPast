@@ -296,16 +296,16 @@ public class ShadowPlayback : MonoBehaviour
         if (showDebugMessages)
             // Debug.Log($"🕯️  Shadow button press: '{recordedId}'");
 
-        // 1) try quick map (id or displayName)
-        if (idMap == null)
-        {
-            idMap = new Dictionary<string, InteractableObject>();
-            foreach (var it in FindObjectsOfType<InteractableObject>(true))
+            // 1) try quick map (id or displayName)
+            if (idMap == null)
             {
-                if (!idMap.ContainsKey(it.objectId)) idMap.Add(it.objectId, it);
-                if (!idMap.ContainsKey(it.displayName)) idMap.Add(it.displayName, it);
+                idMap = new Dictionary<string, InteractableObject>();
+                foreach (var it in FindObjectsOfType<InteractableObject>(true))
+                {
+                    if (!idMap.ContainsKey(it.objectId)) idMap.Add(it.objectId, it);
+                    if (!idMap.ContainsKey(it.displayName)) idMap.Add(it.displayName, it);
+                }
             }
-        }
 
         if (idMap.TryGetValue(recordedId, out InteractableObject target) && target != null)
         {
@@ -334,14 +334,14 @@ public class ShadowPlayback : MonoBehaviour
         if (nearest != null)
         {
             if (showDebugMessages) ;
-                // Debug.Log($"🕯️  Fallback: using closest interactable '{nearest.displayName}'");
+            // Debug.Log($"🕯️  Fallback: using closest interactable '{nearest.displayName}'");
 
             TryShadowInteract(nearest);
         }
         else
         {
             if (showDebugMessages) ;
-                // Debug.LogWarning($"🕯️  No interactable found for '{recordedId}'");
+            // Debug.LogWarning($"🕯️  No interactable found for '{recordedId}'");
         }
     }
 
