@@ -100,7 +100,7 @@ public class PlayerCarrySystem : MonoBehaviour
                     closestInteractable.requiredItemName == carriedItemScript.itemName)
                 {
                     Debug.Log($"Using {carriedItemScript.itemName} with {closestInteractable.displayName}");
-                    closestInteractable.TryInteract();
+                    closestInteractable.TryInteract(this); // Pass this PlayerCarrySystem instance
                     return;
                 }
             }
