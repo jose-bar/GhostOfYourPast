@@ -135,21 +135,21 @@ public class InteractableObject : MonoBehaviour, IResettable
         {
             if (carrySystem == null)
             {
-                Debug.LogError($"No PlayerCarrySystem available for {displayName}");
+                // Debug.LogError($"No PlayerCarrySystem available for {displayName}");
                 return;
             }
 
             if (!carrySystem.IsCarrying() ||
                 carrySystem.GetCarriedItemName() != requiredItemName)
             {
-                Debug.Log($"Need {requiredItemName} to interact with {displayName}");
+                // Debug.Log($"Need {requiredItemName} to interact with {displayName}");
                 return;
             }
 
             // Handle item consumption
             if (consumeItemOnUse)
             {
-                Debug.Log($"Consuming {requiredItemName} on {displayName}");
+                // Debug.Log($"Consuming {requiredItemName} on {displayName}");
                 // Destroy the carried item instead of dropping it
                 GameObject carriedItem = carrySystem.GetCarriedItem();
                 carrySystem.ForceDropItem(); // This sets carried item to null
@@ -162,7 +162,7 @@ public class InteractableObject : MonoBehaviour, IResettable
             }
             else
             {
-                Debug.Log($"Using {requiredItemName} on {displayName} (not consuming)");
+                // Debug.Log($"Using {requiredItemName} on {displayName} (not consuming)");
                 carrySystem.ForceDropItem();
             }
 
@@ -255,7 +255,7 @@ public class InteractableObject : MonoBehaviour, IResettable
         IResettable reset = itemInstance.GetComponent<IResettable>();
         if (reset != null) DayResetManager.Instance?.Register(reset);
 
-        Debug.Log($"? Revealed item: {itemInstance.name}");
+        // Debug.Log($"? Revealed item: {itemInstance.name}");
     }
 
 
@@ -284,13 +284,13 @@ public class InteractableObject : MonoBehaviour, IResettable
 
     void HandleDoorInteraction(bool isPlayer)
     {
-        Debug.Log($"DOOR INTERACTION for {objectId} - player: {isPlayer}");
+        // Debug.Log($"DOOR INTERACTION for {objectId} - player: {isPlayer}");
 
         // Disable door collider if this is a permanent door opening
         if (doorCollider != null && removeCollisionOnOpen)
         {
             doorCollider.isTrigger = true;
-            Debug.Log($"Door collider disabled: {doorCollider.name}");
+            // Debug.Log($"Door collider disabled: {doorCollider.name}");
         }
 
         // CRITICAL FIX: Only teleport player if this interaction came from the player
@@ -300,21 +300,25 @@ public class InteractableObject : MonoBehaviour, IResettable
             if (openedSprite != null && spriteRenderer != null)
                 spriteRenderer.sprite = openedSprite;
 
-            Debug.Log($"Player transitioning to {targetScene} at {spawnPosition}");
+            // Debug.Log($"Player transitioning to {targetScene} at {spawnPosition}");
             Invoke("TransitionPlayerToRoom", 0.5f);
         }
         else if (!isPlayer && !string.IsNullOrEmpty(targetScene))
         {
-            // Tell the shadow to jump immediately so it looks correct
-            ShadowPlayback sp = FindObjectOfType<ShadowPlayback>();
-            if (sp != null)
-            {
-                sp.TransitionToRoom(targetScene, spawnPosition);
-            }
-            else
-            {
-                Debug.LogWarning("ShadowPlayback not found when shadow opened a door");
-            }
+            // 0) flip sprite so the door visibly opens
+            if (openedSprite != null && spriteRenderer != null)
+                spriteRenderer.sprite = openedSprite;
+
+            /* 1) mark door as unlocked so the player can walk through
+                  for the rest of the day                                        */
+            requiresItem = false;
+            isUnlocked = true;
+
+            /* 2)  DO *NOT* call TransitionToRoom here.
+                   The very next line in the recording is a SceneTransition and
+                   ShadowPlayback will teleport there without any extra help.     */
+
+            // Debug.Log($"Shadow unlocked door '{displayName}' ? waiting for recorded SceneTransition");
         }
 
     }
@@ -367,14 +371,26 @@ public class InteractableObject : MonoBehaviour, IResettable
     {
         if (!canBeTriggereByShadow) return;
 
-        Debug.Log($"Shadow interacted with {displayName}");
-        Interact(false); // Pass false to indicate this is NOT a player interaction
+        // Debug.Log($"Shadow interacted with {displayName}");
+
+        /* 1)  run the same interaction logic the player would use */
+        Interact(false);
+
+        /* 2)  if this object normally needed a key, mark it as
+               unlocked for the REST OF THE DAY so the player can
+               walk through without a real key                                 */
+        if (requiresItem)
+        {
+            requiresItem = false;
+            isUnlocked = true;
+        }
     }
+
 
     // Separate method for player teleportation only
     void TransitionPlayerToRoom()
     {
-        Debug.Log($"EXECUTING PLAYER TRANSITION to {targetScene} at {spawnPosition}");
+        // Debug.Log($"EXECUTING PLAYER TRANSITION to {targetScene} at {spawnPosition}");
 
         if (RoomManager.Instance != null)
         {
@@ -384,14 +400,14 @@ public class InteractableObject : MonoBehaviour, IResettable
             // Then teleport player to new position 
             RoomManager.Instance.TeleportPlayer(spawnPosition);
 
-            Debug.Log($"Player room transition complete!");
+            // Debug.Log($"Player room transition complete!");
 
             // Record the transition for the player
             MovementRecorder.Instance?.RecordSceneTransition(targetScene);
         }
         else
         {
-            Debug.LogError("CRITICAL: RoomManager.Instance is null! Room transition failed.");
+            // Debug.LogError("CRITICAL: RoomManager.Instance is null! Room transition failed.");
         }
     }
 

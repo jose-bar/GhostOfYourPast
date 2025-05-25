@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 public class ShadowPlayback : MonoBehaviour
 {
+    enum LastProcessed { None, Movement, SceneTransition, Other }
+
     private List<PositionData> recordingData;
     private int currentIndex = 0;
     private float playbackStartTime;
@@ -10,7 +12,13 @@ public class ShadowPlayback : MonoBehaviour
     private string currentScene;
     private ShadowCarrySystem carrySystem;
     private Rigidbody2D rb;                   // NEW
-    static Dictionary<string, InteractableObject> idMap;
+    Dictionary<string, InteractableObject> idMap;
+    LastProcessed lastProcessed = LastProcessed.None;
+
+    Collider2D myCol;               // cache once
+    int skipPhysicsFrames;   // 0 = normal, 1 = ignore self collision
+
+    const float INTERACT_RADIUS = 1.2f;
 
     [Header("Debug")]
     public bool showDebugMessages = true;
@@ -18,6 +26,7 @@ public class ShadowPlayback : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();     // NEW
+        myCol = GetComponent<Collider2D>();          // NEW
         if (rb != null) rb.isKinematic = true;
         // Ask RoomManager – falls back to Unity scene if RoomManager not ready
         currentScene = (RoomManager.Instance != null && RoomManager.Instance.GetCurrentRoom() != null)
@@ -28,50 +37,49 @@ public class ShadowPlayback : MonoBehaviour
 
         if (carrySystem == null)
         {
-            Debug.LogError("❌ Shadow missing ShadowCarrySystem! Adding one...");
+            // Debug.LogError("❌ Shadow missing ShadowCarrySystem! Adding one...");
             carrySystem = gameObject.AddComponent<ShadowCarrySystem>();
         }
     }
 
     public void Initialize(List<PositionData> data)
     {
-        idMap = new Dictionary<string, InteractableObject>();
+        // 0)   keep reference to recording
         recordingData = new List<PositionData>(data);
         currentIndex = 0;
         playbackStartTime = Time.time;
         isPlaying = true;
 
+        // 1)   take the first recorded room as truth
         currentScene = (recordingData.Count > 0)
-                   ? recordingData[0].sceneName
-                   : UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+                       ? recordingData[0].sceneName
+                       : UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
 
-
-        Debug.Log($"🎭 Shadow initialized with {recordingData.Count} actions");
-
-        // Count different action types for debugging
-        int movements = 0, pickups = 0, drops = 0, scenes = 0, buttons = 0;
-        foreach (var action in recordingData)
-        {
-            switch (action.actionType)
-            {
-                case ActionType.Movement: movements++; break;
-                case ActionType.ItemPickup: pickups++; break;
-                case ActionType.ItemDrop: drops++; break;
-                case ActionType.SceneTransition: scenes++; break;
-                case ActionType.ButtonPress: buttons++; break;
-            }
-        }
-
-        Debug.Log($"📊 Actions: {movements} moves, {pickups} pickups, {drops} drops, {scenes} scenes, {buttons} buttons");
-
-        // Start at first position in current scene
-        // FindFirstPositionInScene();
-
-        // jump to first line (we no longer scan for ‘currentScene’)
+        // 2)   spawn / show at that spot
         if (recordingData.Count > 0)
+            transform.position = recordingData[0].position;
+
+        // 3)   Build fast lookup so we NEVER miss an interactable
+        BuildInteractableMap();
+
+        // Debug.Log($"🕯️  Shadow initialised – {recordingData.Count} actions, start in '{currentScene}' @ {transform.position}");
+    }
+
+    void BuildInteractableMap()
+    {
+        idMap = new Dictionary<string, InteractableObject>();
+
+        foreach (var io in FindObjectsOfType<InteractableObject>(true))
         {
-            transform.position = recordingData[0].position;   // <-- PATCH 2
+            if (!idMap.ContainsKey(io.objectId))
+                idMap.Add(io.objectId, io);
+
+            if (!string.IsNullOrEmpty(io.displayName) &&
+                !idMap.ContainsKey(io.displayName))
+                idMap.Add(io.displayName, io);
         }
+
+        // Debug.Log($"🕯️  Built interactable map with {idMap.Count} entries");
     }
 
     void Update()
@@ -79,9 +87,17 @@ public class ShadowPlayback : MonoBehaviour
         if (!isPlaying || recordingData == null || recordingData.Count == 0)
             return;
 
-        float currentTime = Time.time - playbackStartTime;
+        if (skipPhysicsFrames > 0)
+        {
+            skipPhysicsFrames--;
+            if (skipPhysicsFrames == 0 && myCol != null)
+                myCol.enabled = true;
+        }
 
-        // Process all actions that should have happened by now
+        float currentTime = Time.time - playbackStartTime;
+        int processedThisFrame = 0;
+        const int MAX_ACTIONS_PER_FRAME = 120;   // safety cap (~2 seconds worth)
+
         while (currentIndex < recordingData.Count)
         {
             PositionData currentData = recordingData[currentIndex];
@@ -90,6 +106,16 @@ public class ShadowPlayback : MonoBehaviour
             {
                 ProcessAction(currentData);
                 currentIndex++;
+                processedThisFrame++;
+
+                /*  ❱  Immediately stop for this frame after a scene
+                    transition so currentTime will be recomputed
+                    on the next Update() call.                              */
+                if (lastProcessed == LastProcessed.SceneTransition)
+                    break;
+
+                if (processedThisFrame >= MAX_ACTIONS_PER_FRAME)
+                    break;                              // emergency throttle
             }
             else
             {
@@ -97,76 +123,52 @@ public class ShadowPlayback : MonoBehaviour
             }
         }
 
-        // Stop when we've played all actions
         if (currentIndex >= recordingData.Count)
-        {
             isPlaying = false;
-            Debug.Log("🎭 Shadow playback complete");
-        }
     }
+
 
     void ProcessAction(PositionData data)
     {
-        if (showDebugMessages)
-        {
-            Debug.Log($"🎭 Shadow action: {data.actionType} in {data.sceneName}");
-        }
-
         switch (data.actionType)
         {
             case ActionType.Movement:
-                /*  We always advance the shadow, even if its logical scene
-                    tag does not match the camera’s current room (it may be
-                    off-screen).  We still gate visibility on the comparison
-                    so the shadow only appears when the player’s camera is
-                    in the same room.                                        */
-                if (data.sceneName == currentScene)
-                    gameObject.SetActive(true);          // show / hide
-
-                if (rb != null)
-                    rb.MovePosition(data.position);      // physics-friendly move
-                else
-                    transform.position = data.position;
+                lastProcessed = LastProcessed.Movement;
+                transform.position = data.position;          // <— replace rb.MovePosition
                 break;
 
             case ActionType.SceneTransition:
-                HandleShadowSceneTransition(data.actionData);
+                lastProcessed = LastProcessed.SceneTransition;
+                TransitionToRoom(data.actionData, data.position);
                 break;
 
             case ActionType.ItemPickup:
-                if (data.sceneName == currentScene)
-                {
-                    gameObject.SetActive(true);
-                    transform.position = data.position;
-                    HandleShadowItemPickup(data.actionData);
-                }
+                lastProcessed = LastProcessed.Other;
+                transform.position = data.position;
+                HandleShadowItemPickup(data.actionData);
                 break;
 
             case ActionType.ItemDrop:
-                if (data.sceneName == currentScene)
-                {
-                    gameObject.SetActive(true);
-                    transform.position = data.position;
-                    HandleShadowItemDrop(data.actionData);
-                }
+                lastProcessed = LastProcessed.Other;
+                transform.position = data.position;
+                HandleShadowItemDrop(data.actionData);
                 break;
 
             case ActionType.ButtonPress:
-                if (data.sceneName == currentScene)
-                {
-                    gameObject.SetActive(true);
-                    transform.position = data.position;
-                    HandleShadowButtonPress(data.actionData);
-                }
+                lastProcessed = LastProcessed.Other;
+                transform.position = data.position;
+                HandleShadowButtonPress(data.actionData);
                 break;
         }
     }
+
+
 
     void HandleShadowSceneTransition(string targetScene)
     {
         if (showDebugMessages)
         {
-            Debug.Log($"🎭 Shadow scene transition to: {targetScene}");
+            // Debug.Log($"🎭 Shadow scene transition to: {targetScene}");
         }
 
         // Update the shadow's scene tracking
@@ -178,7 +180,7 @@ public class ShadowPlayback : MonoBehaviour
             if (recordingData[i].sceneName == targetScene)
             {
                 transform.position = recordingData[i].position;
-                Debug.Log($"🎭 Shadow positioned at {transform.position} in {targetScene}");
+                // Debug.Log($"🎭 Shadow positioned at {transform.position} in {targetScene}");
                 break;
             }
         }
@@ -191,7 +193,7 @@ public class ShadowPlayback : MonoBehaviour
     {
         if (showDebugMessages)
         {
-            Debug.Log($"🔍 Processing shadow pickup: '{actionData}'");
+            // Debug.Log($"🔍 Processing shadow pickup: '{actionData}'");
         }
 
         // Parse actionData: "itemName|x|y"
@@ -206,21 +208,21 @@ public class ShadowPlayback : MonoBehaviour
                 if (carrySystem != null)
                 {
                     carrySystem.OnShadowPickupItem(itemName, originalPosition);
-                    Debug.Log($"✅ Shadow picked up phantom '{itemName}' at {originalPosition}");
+                    // Debug.Log($"✅ Shadow picked up phantom '{itemName}' at {originalPosition}");
                 }
                 else
                 {
-                    Debug.LogError("❌ ShadowCarrySystem is null!");
+                    // Debug.LogError("❌ ShadowCarrySystem is null!");
                 }
             }
             else
             {
-                Debug.LogError($"❌ Failed to parse position from '{actionData}'");
+                // Debug.LogError($"❌ Failed to parse position from '{actionData}'");
             }
         }
         else
         {
-            Debug.LogError($"❌ Invalid actionData format: '{actionData}'. Expected 'itemName|x|y'");
+            // Debug.LogError($"❌ Invalid actionData format: '{actionData}'. Expected 'itemName|x|y'");
         }
     }
 
@@ -228,7 +230,7 @@ public class ShadowPlayback : MonoBehaviour
     {
         if (showDebugMessages)
         {
-            Debug.Log($"🔍 Processing shadow drop: '{actionData}'");
+            // Debug.Log($"🔍 Processing shadow drop: '{actionData}'");
         }
 
         // Parse actionData: "itemName|x|y"
@@ -243,11 +245,11 @@ public class ShadowPlayback : MonoBehaviour
                 if (carrySystem != null)
                 {
                     carrySystem.OnShadowDropItem(itemName, dropPosition);
-                    Debug.Log($"✅ Shadow dropped phantom '{itemName}' at {dropPosition}");
+                    // Debug.Log($"✅ Shadow dropped phantom '{itemName}' at {dropPosition}");
                 }
                 else
                 {
-                    Debug.LogError("❌ ShadowCarrySystem is null!");
+                    // Debug.LogError("❌ ShadowCarrySystem is null!");
                 }
             }
         }
@@ -261,7 +263,7 @@ public class ShadowPlayback : MonoBehaviour
 
         if (showDebugMessages)
         {
-            Debug.Log($"🎭 Scene changed from {oldScene} to {newSceneName}");
+            // Debug.Log($"🎭 Scene changed from {oldScene} to {newSceneName}");
         }
 
         // Check if shadow should be visible in this scene
@@ -285,17 +287,16 @@ public class ShadowPlayback : MonoBehaviour
 
         if (showDebugMessages)
         {
-            Debug.Log($"🎭 Shadow in {newSceneName}: {(shouldBeVisible ? "VISIBLE" : "HIDDEN")}");
+            // Debug.Log($"🎭 Shadow in {newSceneName}: {(shouldBeVisible ? "VISIBLE" : "HIDDEN")}");
         }
     }
 
     void HandleShadowButtonPress(string recordedId)
     {
         if (showDebugMessages)
-            Debug.Log($"🕯️ Shadow button press: '{recordedId}'");
+            // Debug.Log($"🕯️  Shadow button press: '{recordedId}'");
 
-        // Build quick lookup once per shadow
-        
+        // 1) try quick map (id or displayName)
         if (idMap == null)
         {
             idMap = new Dictionary<string, InteractableObject>();
@@ -306,41 +307,82 @@ public class ShadowPlayback : MonoBehaviour
             }
         }
 
-        if (!idMap.TryGetValue(recordedId, out InteractableObject target) || target == null)
+        if (idMap.TryGetValue(recordedId, out InteractableObject target) && target != null)
         {
-            Debug.LogWarning($"🕯️  Shadow could not find interactable '{recordedId}'");
+            TryShadowInteract(target);
             return;
         }
 
-        if (!target.canBeTriggereByShadow) return;
+        // 2)  Fallback – pick the closest interactable in front of us
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, INTERACT_RADIUS);
+        float best = float.MaxValue;
+        InteractableObject nearest = null;
 
-        target.ShadowInteract();
+        foreach (var h in hits)
+        {
+            var io = h.GetComponent<InteractableObject>();
+            if (io == null) continue;
+
+            float d = Vector2.Distance(io.transform.position, transform.position);
+            if (d < best)
+            {
+                best = d;
+                nearest = io;
+            }
+        }
+
+        if (nearest != null)
+        {
+            if (showDebugMessages) ;
+                // Debug.Log($"🕯️  Fallback: using closest interactable '{nearest.displayName}'");
+
+            TryShadowInteract(nearest);
+        }
+        else
+        {
+            if (showDebugMessages) ;
+                // Debug.LogWarning($"🕯️  No interactable found for '{recordedId}'");
+        }
     }
+
+    void TryShadowInteract(InteractableObject io)
+    {
+        if (!io.canBeTriggereByShadow) return;
+        io.ShadowInteract();
+    }
+
 
 
     public void TransitionToRoom(string roomName, Vector3 pos)
     {
-        /* 1)   advance the playback pointer so that the very next action
-         *      we process is the FIRST one that belongs to the new room      */
-        for (int i = currentIndex; i < recordingData.Count; i++)
+        /* 1) find FIRST action that belongs to the target room */
+        int newIndex = currentIndex;
+        while (newIndex < recordingData.Count &&
+               recordingData[newIndex].sceneName != roomName)
         {
-            if (recordingData[i].sceneName == roomName)
-            {
-                currentIndex = i;          // ← jump cursor
-                break;
-            }
+            newIndex++;
         }
 
-        /* 2)   keep the internal bookkeeping and visibility logic  */
+        if (newIndex >= recordingData.Count)
+        {
+            // Debug.LogWarning($"🕯️  TransitionToRoom: room '{roomName}' not found in recording");
+            return;
+        }
+
+        /* 2) bookkeeping */
         HandleShadowSceneTransition(roomName);
 
-        if (currentIndex < recordingData.Count)
-        {
-            playbackStartTime = Time.time - recordingData[currentIndex].time;
-        }
+        /* 3) rewind virtual clock so we continue exactly at newIndex */
+        playbackStartTime = Time.time - recordingData[newIndex].time;
 
-        /* 3)   finally snap to the door’s spawn-point so the shadow is
-         *      visually in the right place when the new room appears        */
+        /* 4) position the shadow at the door-spawn */
         transform.position = pos;
+
+        /* 5) IMPORTANT ► we will ++ the index in Update() right after
+              ProcessAction returns, therefore we store (newIndex-1) here   */
+        currentIndex = (newIndex > currentIndex) ? newIndex - 1 : currentIndex;
+
+        if (myCol != null) { myCol.enabled = false; skipPhysicsFrames = 5; }
     }
+
 }
