@@ -39,6 +39,19 @@ public class MovementRecorder : MonoBehaviour
         Instance = this;
     }
 
+    // Return the currently active ROOM name (falls back to Unity scene)
+    string CurrentRoomName
+    {
+        get
+        {
+            if (RoomManager.Instance != null && RoomManager.Instance.GetCurrentRoom() != null)
+                return RoomManager.Instance.GetCurrentRoom().roomName;
+
+            // fallback – single-scene projects
+            return UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        }
+    }
+
     public void StartNewDay()
     {
         Debug.Log("Starting new day recording...");
@@ -62,7 +75,7 @@ public class MovementRecorder : MonoBehaviour
             {
                 time = currentTime,
                 position = position,
-                sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name,
+                sceneName = CurrentRoomName,
                 actionType = ActionType.Movement,
                 actionData = ""
             };
@@ -80,7 +93,7 @@ public class MovementRecorder : MonoBehaviour
         {
             time = Time.time - dayStartTime,
             position = transform.position,
-            sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name,
+            sceneName = CurrentRoomName,
             actionType = ActionType.SceneTransition,
             actionData = targetScene
         };
@@ -97,7 +110,7 @@ public class MovementRecorder : MonoBehaviour
         {
             time = Time.time - dayStartTime,
             position = transform.position,
-            sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name,
+            sceneName = CurrentRoomName,
             actionType = ActionType.ItemPickup,
             actionData = itemName + "|" + itemPosition.x + "|" + itemPosition.y
         };
@@ -114,7 +127,7 @@ public class MovementRecorder : MonoBehaviour
         {
             time = Time.time - dayStartTime,
             position = transform.position,
-            sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name,
+            sceneName = CurrentRoomName,
             actionType = ActionType.ItemDrop,
             actionData = itemName + "|" + dropPosition.x + "|" + dropPosition.y
         };
@@ -131,7 +144,8 @@ public class MovementRecorder : MonoBehaviour
         {
             time = Time.time - dayStartTime,
             position = transform.position,
-            sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name,
+            sceneName = CurrentRoomName,
+
             actionType = ActionType.ButtonPress,
             actionData = buttonName
         };

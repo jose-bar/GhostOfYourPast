@@ -59,19 +59,29 @@ public class InteractableObject : MonoBehaviour, IResettable
     private bool initIsOpen;
     private bool initHasBeenUsed;
     private bool initDoorColliderEnabled;
+    private bool initRequiresItem;                 // PATCH #1
+    private bool initDoorIsTrigger;          // NEW
+
+    // run-time only
+    private bool isUnlocked = false;               // PATCH #1
 
     void Start()
     {
+        //---- we catch both root AND child sprite renderers now ------------
         spriteRenderer = GetComponent<SpriteRenderer>();
-        CaptureInitialState();                            // NEW
-        DayResetManager.Instance?.Register(this);         // NEW
+        if (spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>();  // PATCH #2
+
+        CaptureInitialState();
+        DayResetManager.Instance?.Register(this);
     }
 
-    void CaptureInitialState()                            // NEW
+    void CaptureInitialState()
     {
         initIsOpen = isOpen;
         initHasBeenUsed = hasBeenUsed;
         initDoorColliderEnabled = doorCollider ? doorCollider.enabled : true;
+        initRequiresItem = requiresItem;    // PATCH #1
+        initDoorIsTrigger = doorCollider ? doorCollider.isTrigger : false;   // NEW
     }
 
     void Update()
@@ -87,9 +97,15 @@ public class InteractableObject : MonoBehaviour, IResettable
     {
         isOpen = initIsOpen;
         hasBeenUsed = initHasBeenUsed;
+        isUnlocked = false;                       // PATCH #1
+        requiresItem = initRequiresItem;            // PATCH #1
 
         // rewind visuals / physics
-        if (doorCollider) doorCollider.enabled = initDoorColliderEnabled;
+        if (doorCollider)
+        {
+            doorCollider.enabled = initDoorColliderEnabled;
+            doorCollider.isTrigger = initDoorIsTrigger;        // NEW
+        }
 
         // sprite swap back
         if (spriteRenderer != null && closedSprite != null)
@@ -100,6 +116,7 @@ public class InteractableObject : MonoBehaviour, IResettable
 
     bool CanInteract()
     {
+        if (isUnlocked) requiresItem = false;      // PATCH #1
         // Allow interaction if it's not one-time use, or if it hasn't been used yet
         return !hasBeenUsed || !isOneTimeUse;
     }
@@ -146,6 +163,9 @@ public class InteractableObject : MonoBehaviour, IResettable
                 Debug.Log($"Using {requiredItemName} on {displayName} (not consuming)");
                 carrySystem.ForceDropItem();
             }
+
+            isUnlocked = true;                   // PATCH #1
+            requiresItem = false;                  // PATCH #1
         }
 
         if (canInteract)
@@ -208,49 +228,37 @@ public class InteractableObject : MonoBehaviour, IResettable
         }
     }
 
-    void RevealItem(GameObject item)
+    void RevealItem(GameObject itemRef)
     {
-        // Make sure item is active
-        item.SetActive(true);
+        if (itemRef == null) return;
 
-        // Ensure the item has a collider
-        Collider2D itemCollider = item.GetComponent<Collider2D>();
-        if (itemCollider == null)
+        GameObject itemInstance;
+
+        // Is the reference already in the scene?
+        if (itemRef.scene.IsValid() && itemRef.scene.isLoaded)
         {
-            Debug.LogWarning($"Item {item.name} has no collider! Adding one...");
-            BoxCollider2D newCollider = item.AddComponent<BoxCollider2D>();
-            newCollider.isTrigger = true;
-            newCollider.size = new Vector2(0.5f, 0.5f);
+            itemInstance = itemRef;
+            itemInstance.SetActive(true);                 // un-hide
         }
         else
         {
-            itemCollider.enabled = true;
-            itemCollider.isTrigger = true;
+            /* It?s a prefab asset ? spawn a fresh copy in front of (or
+               slightly above) the drawer so the player can grab it         */
+            Vector3 spawnPos = transform.position + Vector3.up * 0.2f;
+            itemInstance = Instantiate(itemRef, spawnPos, Quaternion.identity);
         }
 
-        // Make sure item has CarryableItem component
-        CarryableItem carryableItem = item.GetComponent<CarryableItem>();
-        if (carryableItem == null)
-        {
-            Debug.LogWarning($"Item {item.name} has no CarryableItem component! Adding one...");
-            carryableItem = item.AddComponent<CarryableItem>();
-            carryableItem.itemName = item.name;
-        }
+        // Detach so sprite-sorting of the drawer never hides it again
+        itemInstance.transform.SetParent(null);
 
-        // Force SpriteRenderer to be visible
-        SpriteRenderer renderer = item.GetComponent<SpriteRenderer>();
-        if (renderer != null)
-        {
-            renderer.enabled = true;
-            renderer.color = Color.white;
-        }
-        else
-        {
-            Debug.LogWarning($"Item {item.name} has no SpriteRenderer! Items need sprites.");
-        }
+        // Register with DayResetManager if it has IResettable
+        IResettable reset = itemInstance.GetComponent<IResettable>();
+        if (reset != null) DayResetManager.Instance?.Register(reset);
 
-        Debug.Log($"Successfully revealed and set up item: {item.name}");
+        Debug.Log($"? Revealed item: {itemInstance.name}");
     }
+
+
 
     void HandleTypeSpecificBehavior(bool isPlayer)
     {
@@ -281,7 +289,7 @@ public class InteractableObject : MonoBehaviour, IResettable
         // Disable door collider if this is a permanent door opening
         if (doorCollider != null && removeCollisionOnOpen)
         {
-            doorCollider.enabled = false;
+            doorCollider.isTrigger = true;
             Debug.Log($"Door collider disabled: {doorCollider.name}");
         }
 
@@ -295,9 +303,18 @@ public class InteractableObject : MonoBehaviour, IResettable
             Debug.Log($"Player transitioning to {targetScene} at {spawnPosition}");
             Invoke("TransitionPlayerToRoom", 0.5f);
         }
-        else if (!isPlayer)
+        else if (!isPlayer && !string.IsNullOrEmpty(targetScene))
         {
-            Debug.Log($"Shadow opened door {objectId} but did not teleport player");
+            // Tell the shadow to jump immediately so it looks correct
+            ShadowPlayback sp = FindObjectOfType<ShadowPlayback>();
+            if (sp != null)
+            {
+                sp.TransitionToRoom(targetScene, spawnPosition);
+            }
+            else
+            {
+                Debug.LogWarning("ShadowPlayback not found when shadow opened a door");
+            }
         }
 
     }
@@ -306,10 +323,15 @@ public class InteractableObject : MonoBehaviour, IResettable
     {
         isOpen = !isOpen;
 
-        // sprite swap
         if (spriteRenderer != null)
         {
             spriteRenderer.sprite = isOpen ? openedSprite : closedSprite;
+        }
+
+        // -------------- NEW : reveal items **after** the drawer visibly opened ------
+        if (isOpen && revealItemsOnInteract && itemsToReveal != null)          // PATCH #3
+        {
+            foreach (GameObject item in itemsToReveal) RevealItem(item);
         }
     }
 
@@ -375,4 +397,5 @@ public class InteractableObject : MonoBehaviour, IResettable
     }
 
     void OnDestroy() { DayResetManager.Instance?.Unregister(this); }
+
 }

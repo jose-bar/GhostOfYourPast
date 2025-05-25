@@ -9,13 +9,20 @@ public class ShadowPlayback : MonoBehaviour
     private bool isPlaying = false;
     private string currentScene;
     private ShadowCarrySystem carrySystem;
+    private Rigidbody2D rb;                   // NEW
 
     [Header("Debug")]
     public bool showDebugMessages = true;
 
     void Start()
     {
-        currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        rb = GetComponent<Rigidbody2D>();     // NEW
+        if (rb != null) rb.isKinematic = true;
+        // Ask RoomManager – falls back to Unity scene if RoomManager not ready
+        currentScene = (RoomManager.Instance != null && RoomManager.Instance.GetCurrentRoom() != null)
+                       ? RoomManager.Instance.GetCurrentRoom().roomName
+                       : UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+
         carrySystem = GetComponent<ShadowCarrySystem>();
 
         if (carrySystem == null)
@@ -31,7 +38,11 @@ public class ShadowPlayback : MonoBehaviour
         currentIndex = 0;
         playbackStartTime = Time.time;
         isPlaying = true;
-        currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+
+        currentScene = (recordingData.Count > 0)
+                   ? recordingData[0].sceneName
+                   : UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+
 
         Debug.Log($"🎭 Shadow initialized with {recordingData.Count} actions");
 
@@ -52,20 +63,12 @@ public class ShadowPlayback : MonoBehaviour
         Debug.Log($"📊 Actions: {movements} moves, {pickups} pickups, {drops} drops, {scenes} scenes, {buttons} buttons");
 
         // Start at first position in current scene
-        FindFirstPositionInScene();
-    }
+        // FindFirstPositionInScene();
 
-    void FindFirstPositionInScene()
-    {
-        for (int i = 0; i < recordingData.Count; i++)
+        // jump to first line (we no longer scan for ‘currentScene’)
+        if (recordingData.Count > 0)
         {
-            if (recordingData[i].sceneName == currentScene)
-            {
-                transform.position = recordingData[i].position;
-                currentIndex = i;
-                Debug.Log($"🎯 Shadow starting at position {recordingData[i].position} in scene {currentScene}");
-                break;
-            }
+            transform.position = recordingData[0].position;   // <-- PATCH 2
         }
     }
 
@@ -113,7 +116,11 @@ public class ShadowPlayback : MonoBehaviour
                 if (data.sceneName == currentScene)
                 {
                     gameObject.SetActive(true);
-                    transform.position = data.position;
+
+                    if (rb != null)
+                        rb.MovePosition(data.position);   // physics-friendly move
+                    else
+                        transform.position = data.position;
                 }
                 break;
 
@@ -308,46 +315,29 @@ public class ShadowPlayback : MonoBehaviour
         }
     }
 
-    public void TransitionToRoom(string roomName, Vector3 position)
+    public void TransitionToRoom(string roomName, Vector3 pos)
     {
-        Debug.Log($"🎭 Shadow transitioning to room: {roomName}");
-
-        // Update current scene name
-        currentScene = roomName;
-
-        // Check if we have actions in this scene
-        bool hasActionsInScene = false;
-
-        for (int i = 0; i < recordingData.Count; i++)
+        /* 1)   advance the playback pointer so that the very next action
+         *      we process is the FIRST one that belongs to the new room      */
+        for (int i = currentIndex; i < recordingData.Count; i++)
         {
             if (recordingData[i].sceneName == roomName)
             {
-                hasActionsInScene = true;
+                currentIndex = i;          // ← jump cursor
                 break;
             }
         }
 
-        // If we have actions in this scene, position shadow at the first one
-        if (hasActionsInScene)
+        /* 2)   keep the internal bookkeeping and visibility logic  */
+        HandleShadowSceneTransition(roomName);
+
+        if (currentIndex < recordingData.Count)
         {
-            // Find first position in this scene
-            for (int i = 0; i < recordingData.Count; i++)
-            {
-                if (recordingData[i].sceneName == roomName)
-                {
-                    transform.position = recordingData[i].position;
-                    currentIndex = i;
-                    gameObject.SetActive(true);
-                    Debug.Log($"🎭 Shadow appeared in {roomName} at {transform.position}");
-                    break;
-                }
-            }
+            playbackStartTime = Time.time - recordingData[currentIndex].time;
         }
-        else
-        {
-            // Hide shadow if no actions in this scene
-            gameObject.SetActive(false);
-            Debug.Log($"🎭 Shadow has no actions in {roomName}, hiding it");
-        }
+
+        /* 3)   finally snap to the door’s spawn-point so the shadow is
+         *      visually in the right place when the new room appears        */
+        transform.position = pos;
     }
 }
