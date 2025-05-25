@@ -26,9 +26,8 @@ public class DayResetManager : MonoBehaviour
 
     public void ResetDay()
     {
-        foreach (var r in resettables)
-        {
+        // work on a copy so collection may change inside ResetState
+        foreach (var r in new List<IResettable>(resettables))
             r.ResetState();
-        }
     }
 }

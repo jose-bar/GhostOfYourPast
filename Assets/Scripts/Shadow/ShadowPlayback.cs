@@ -10,6 +10,7 @@ public class ShadowPlayback : MonoBehaviour
     private string currentScene;
     private ShadowCarrySystem carrySystem;
     private Rigidbody2D rb;                   // NEW
+    static Dictionary<string, InteractableObject> idMap;
 
     [Header("Debug")]
     public bool showDebugMessages = true;
@@ -34,6 +35,7 @@ public class ShadowPlayback : MonoBehaviour
 
     public void Initialize(List<PositionData> data)
     {
+        idMap = new Dictionary<string, InteractableObject>();
         recordingData = new List<PositionData>(data);
         currentIndex = 0;
         playbackStartTime = Time.time;
@@ -113,15 +115,18 @@ public class ShadowPlayback : MonoBehaviour
         switch (data.actionType)
         {
             case ActionType.Movement:
+                /*  We always advance the shadow, even if its logical scene
+                    tag does not match the camera’s current room (it may be
+                    off-screen).  We still gate visibility on the comparison
+                    so the shadow only appears when the player’s camera is
+                    in the same room.                                        */
                 if (data.sceneName == currentScene)
-                {
-                    gameObject.SetActive(true);
+                    gameObject.SetActive(true);          // show / hide
 
-                    if (rb != null)
-                        rb.MovePosition(data.position);   // physics-friendly move
-                    else
-                        transform.position = data.position;
-                }
+                if (rb != null)
+                    rb.MovePosition(data.position);      // physics-friendly move
+                else
+                    transform.position = data.position;
                 break;
 
             case ActionType.SceneTransition:
@@ -284,36 +289,34 @@ public class ShadowPlayback : MonoBehaviour
         }
     }
 
-    void HandleShadowButtonPress(string objectId)
+    void HandleShadowButtonPress(string recordedId)
     {
         if (showDebugMessages)
-        {
-            Debug.Log($"🎭 Shadow trying to interact with: '{objectId}'");
-        }
+            Debug.Log($"🕯️ Shadow button press: '{recordedId}'");
 
-        // Find the specific interactable object by ID
-        InteractableObject[] interactables = FindObjectsOfType<InteractableObject>();
-
-        foreach (var interactable in interactables)
+        // Build quick lookup once per shadow
+        
+        if (idMap == null)
         {
-            if (interactable.objectId == objectId && interactable.canBeTriggereByShadow)
+            idMap = new Dictionary<string, InteractableObject>();
+            foreach (var it in FindObjectsOfType<InteractableObject>(true))
             {
-                if (showDebugMessages)
-                {
-                    Debug.Log($"🎭 Shadow found and interacting with: {interactable.displayName}");
-                }
-
-                // CRITICAL: Call ShadowInteract to ensure isPlayer = false
-                interactable.ShadowInteract();
-                return;
+                if (!idMap.ContainsKey(it.objectId)) idMap.Add(it.objectId, it);
+                if (!idMap.ContainsKey(it.displayName)) idMap.Add(it.displayName, it);
             }
         }
 
-        if (showDebugMessages)
+        if (!idMap.TryGetValue(recordedId, out InteractableObject target) || target == null)
         {
-            Debug.LogWarning($"🎭 Shadow could not find interactable with ID: '{objectId}'");
+            Debug.LogWarning($"🕯️  Shadow could not find interactable '{recordedId}'");
+            return;
         }
+
+        if (!target.canBeTriggereByShadow) return;
+
+        target.ShadowInteract();
     }
+
 
     public void TransitionToRoom(string roomName, Vector3 pos)
     {

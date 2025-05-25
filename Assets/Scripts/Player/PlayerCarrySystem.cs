@@ -108,20 +108,17 @@ public class PlayerCarrySystem : MonoBehaviour
                 }
             }
 
-            // Priority 2: Interact with objects that don't need items
-            // IMPORTANT: Player keeps carrying their item when going through doors
-            if (closestInteractable != null && !closestInteractable.requiresItem)
-            {
-                string carryStatus = carriedItem != null ? $" (carrying {carriedItemScript.itemName})" : "";
-                Debug.Log($"Interacting with {closestInteractable.displayName}{carryStatus}");
-                closestInteractable.TryInteract(this);
-                return;
-            }
-
-            // Priority 3: Pick up items (only if not carrying anything)
+            // ? priority 2 : PICK UP nearby item (if hands are free) --------
             if (carriedItem == null && nearbyItem != null)
             {
                 PickUpItem(nearbyItem);
+                return;
+            }
+
+            // ? priority 3 : interact with objects that don?t need an item --
+            if (closestInteractable != null && !closestInteractable.requiresItem)
+            {
+                closestInteractable.TryInteract(this);
                 return;
             }
 

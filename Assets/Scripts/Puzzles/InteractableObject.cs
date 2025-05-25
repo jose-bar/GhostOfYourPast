@@ -61,6 +61,7 @@ public class InteractableObject : MonoBehaviour, IResettable
     private bool initDoorColliderEnabled;
     private bool initRequiresItem;                 // PATCH #1
     private bool initDoorIsTrigger;          // NEW
+    private bool hasRevealedThisDay = false;
 
     // run-time only
     private bool isUnlocked = false;               // PATCH #1
@@ -99,6 +100,7 @@ public class InteractableObject : MonoBehaviour, IResettable
         hasBeenUsed = initHasBeenUsed;
         isUnlocked = false;                       // PATCH #1
         requiresItem = initRequiresItem;            // PATCH #1
+        hasRevealedThisDay = false;
 
         // rewind visuals / physics
         if (doorCollider)
@@ -191,15 +193,11 @@ public class InteractableObject : MonoBehaviour, IResettable
         }
 
         // Reveal items if specified
-        if (revealItemsOnInteract && itemsToReveal != null)
+        if (revealItemsOnInteract && objectType != InteractableType.Drawer &&
+            itemsToReveal != null)
         {
             foreach (GameObject item in itemsToReveal)
-            {
-                if (item != null)
-                {
-                    RevealItem(item);
-                }
-            }
+                RevealItem(item);
         }
 
         // Handle type-specific behavior
@@ -240,12 +238,14 @@ public class InteractableObject : MonoBehaviour, IResettable
             itemInstance = itemRef;
             itemInstance.SetActive(true);                 // un-hide
         }
-        else
+        else                 // ? this is the ?instantiate prefab? branch
         {
-            /* It?s a prefab asset ? spawn a fresh copy in front of (or
-               slightly above) the drawer so the player can grab it         */
-            Vector3 spawnPos = transform.position + Vector3.up * 0.2f;
+            Vector3 spawnPos = transform.position + Vector3.up * 0.35f;
             itemInstance = Instantiate(itemRef, spawnPos, Quaternion.identity);
+
+            // Tag as temporary so it is removed on the next reset
+            itemInstance.AddComponent<TemporaryResettable>();    // NEW
+                                                                 // (registration handled by component itself)
         }
 
         // Detach so sprite-sorting of the drawer never hides it again
@@ -324,13 +324,12 @@ public class InteractableObject : MonoBehaviour, IResettable
         isOpen = !isOpen;
 
         if (spriteRenderer != null)
-        {
             spriteRenderer.sprite = isOpen ? openedSprite : closedSprite;
-        }
 
-        // -------------- NEW : reveal items **after** the drawer visibly opened ------
-        if (isOpen && revealItemsOnInteract && itemsToReveal != null)          // PATCH #3
+        // reveal exactly ONCE per day
+        if (isOpen && revealItemsOnInteract && !hasRevealedThisDay && itemsToReveal != null)
         {
+            hasRevealedThisDay = true;                           // lock
             foreach (GameObject item in itemsToReveal) RevealItem(item);
         }
     }
