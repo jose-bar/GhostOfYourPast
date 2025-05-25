@@ -8,26 +8,38 @@ public class PlayerController2D : MonoBehaviour
     private Rigidbody2D rb;
     private Vector2 movement;
 
-    void Start()
+    private Animator animator;
+    private SpriteRenderer spriteRenderer;
+
+void Start()
+{
+    rb = GetComponent<Rigidbody2D>();
+    animator = GetComponent<Animator>();
+    spriteRenderer = GetComponent<SpriteRenderer>();
+}
+
+void Update()
+{
+    // Get input
+    movement.x = Input.GetAxisRaw("Horizontal");
+    movement.y = Input.GetAxisRaw("Vertical");
+
+    movement = movement.normalized;
+
+    bool isMoving = movement.magnitude > 0.01f;
+    animator.SetBool("isMoving", isMoving);
+
+    if (isMoving)
     {
-        rb = GetComponent<Rigidbody2D>();
+        MovementRecorder.Instance?.RecordPosition(transform.position);
+
+        // Flip sprite based on direction
+        if (movement.x > 0)
+            spriteRenderer.flipX = true;
+        else if (movement.x < 0)
+            spriteRenderer.flipX = false;
     }
-
-    void Update()
-    {
-        // Get input
-        movement.x = Input.GetAxisRaw("Horizontal");
-        movement.y = Input.GetAxisRaw("Vertical");
-
-        // Normalize diagonal movement
-        movement = movement.normalized;
-
-        // Record movement if player is moving
-        if (movement.magnitude > 0.1f)
-        {
-            MovementRecorder.Instance?.RecordPosition(transform.position);
-        }
-    }
+}
 
     void FixedUpdate()
     {
