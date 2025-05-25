@@ -3284,7 +3284,7 @@ MonoBehaviour:
   interactKey: 101
   interactionPrompt: Press E to interact
   isOneTimeUse: 0
-  canBeTriggereByShadow: 0
+  canBeTriggereByShadow: 1
   objectType: 1
   itemsToReveal: []
   revealItemsOnInteract: 0
