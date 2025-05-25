@@ -11,7 +11,7 @@ public class PlayerController2D : MonoBehaviour
     private Animator animator;
     private SpriteRenderer spriteRenderer;
 
-    bool isDeath = false;
+    bool isDead = false;
     bool isMoving = false;
 void Start()
 {
