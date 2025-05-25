@@ -696,7 +696,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   yarnNodeName: StorageRoom
-  pauseDuration: 2
+  pauseDuration: 0
   onRepeat: 1
   isKeyTrigger: 1
   interactKey: 101
@@ -988,7 +988,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   yarnNodeName: LivingRoom
-  pauseDuration: 2
+  pauseDuration: 0
   onRepeat: 0
   isKeyTrigger: 0
   interactKey: 101
@@ -1869,7 +1869,7 @@ Transform:
   m_GameObject: {fileID: 475218381}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -4.09, y: -16.59, z: 0}
+  m_LocalPosition: {x: -8.06, y: -15.33, z: 0}
   m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -2584,6 +2584,7 @@ GameObject:
   - component: {fileID: 572358714}
   - component: {fileID: 572358717}
   - component: {fileID: 572358718}
+  - component: {fileID: 572358719}
   m_Layer: 0
   m_Name: Bed
   m_TagString: Untagged
@@ -2716,13 +2717,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 572358713}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4aa3f61f487b144ca83240121cd62b51, type: 3}
+  m_Script: {fileID: 11500000, guid: e871f405acd3af74c8ca79fdc5bafd6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dayNumber: 1
-  checkPuzzleSolved: 1
-  advancesDay: 1
-  cooldownSeconds: 3
+  cooldownDuration: 5
+--- !u!114 &572358719
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 572358713}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d3da0361744035429b6781b648016fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  yarnNodeName: PassOut
+  pauseDuration: 0
+  onRepeat: 1
+  isKeyTrigger: 0
+  interactKey: 101
 --- !u!1 &591247079
 GameObject:
   m_ObjectHideFlags: 0
@@ -3170,6 +3185,7 @@ GameObject:
   - component: {fileID: 682588917}
   - component: {fileID: 682588919}
   - component: {fileID: 682588918}
+  - component: {fileID: 682588920}
   m_Layer: 0
   m_Name: DoorSPrite
   m_TagString: Untagged
@@ -3265,7 +3281,7 @@ MonoBehaviour:
   interactKey: 101
   interactionPrompt: Press E to interact
   isOneTimeUse: 0
-  canBeTriggereByShadow: 1
+  canBeTriggereByShadow: 0
   objectType: 1
   itemsToReveal: []
   revealItemsOnInteract: 0
@@ -3323,7 +3339,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
@@ -3366,6 +3382,23 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 7
+--- !u!114 &682588920
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 682588914}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d3da0361744035429b6781b648016fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  yarnNodeName: LockedDoor
+  pauseDuration: 0
+  onRepeat: 1
+  isKeyTrigger: 1
+  interactKey: 101
 --- !u!1 &712141091
 GameObject:
   m_ObjectHideFlags: 0
@@ -8756,8 +8789,12 @@ PrefabInstance:
       value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 4518172159292855399, guid: 8c61047c518754422b44030a8ae8b584, type: 3}
+      propertyPath: fadeDuration
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4518172159292855399, guid: 8c61047c518754422b44030a8ae8b584, type: 3}
       propertyPath: deathPauseTime
-      value: 5
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 8752985261010800636, guid: 8c61047c518754422b44030a8ae8b584, type: 3}
       propertyPath: m_LocalPosition.x

@@ -56,7 +56,7 @@ public class DialogueTrigger : MonoBehaviour
         }
     }
 
-    private void TriggerDialogue()
+    public void TriggerDialogue()
 {
     if (triggered) return;
     if (dialogueRunner == null || dialogueRunner.IsDialogueRunning) return;
