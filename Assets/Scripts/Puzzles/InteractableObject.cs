@@ -191,10 +191,6 @@ public class InteractableObject : MonoBehaviour
     {
         if (!string.IsNullOrEmpty(targetScene))
         {
-            // Set spawn data for next scene
-            PlayerSpawnManager.Instance?.SetSpawnData(spawnPosition, targetScene);
-
-            // Load the scene
             UnityEngine.SceneManagement.SceneManager.LoadScene(targetScene);
         }
     }
