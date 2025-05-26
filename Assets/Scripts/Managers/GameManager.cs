@@ -24,6 +24,8 @@ public class GameManager : MonoBehaviour
         return puzzleSolvedThisDay;
     }
 
+    private ScreenFader screenFader;
+
     void Awake()
     {
         if (Instance == null)
