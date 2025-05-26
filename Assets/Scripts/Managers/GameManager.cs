@@ -45,6 +45,10 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         screenFader = FindObjectOfType<ScreenFader>();
+        if (screenFader != null)
+        {
+            StartCoroutine(screenFader.FadeFromBlack(5f)); // fade in over 5 seconds
+        }
         StartNewDay();
     }
 

@@ -10,6 +10,7 @@ public class ScreenFader : MonoBehaviour
     {
         fadeImage = GetComponent<Image>();
         fadeImage.raycastTarget = false; // avoid blocking UI
+        
     }
 
     public IEnumerator FadeToBlack(float duration)

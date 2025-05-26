@@ -3155,7 +3155,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 2
   m_TargetDisplay: 0
 --- !u!224 &591247083
 RectTransform:
@@ -4188,6 +4188,7 @@ MonoBehaviour:
   dayText: {fileID: 0}
   timerText: {fileID: 0}
   showDebugMessages: 1
+  fadeStartTime: 15
   dayStartRealtime: 0
 --- !u!4 &816635708
 Transform:
@@ -5084,7 +5085,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 727820995}
-  - {fileID: 1549830980}
   - {fileID: 8528829}
   - {fileID: 1589409613}
   - {fileID: 475218382}
@@ -9071,7 +9071,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
