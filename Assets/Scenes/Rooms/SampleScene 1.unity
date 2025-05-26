@@ -7051,7 +7051,7 @@ MonoBehaviour:
   targetScene: 
   spawnPosition: {x: 0, y: 0, z: 0}
   doorCollider: {fileID: 0}
-  removeCollisionOnOpen: 1
+  removeCollisionOnOpen: 0
   isDoorPassage: 0
   OnInteract:
     m_PersistentCalls:
