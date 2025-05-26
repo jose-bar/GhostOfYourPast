@@ -13,6 +13,10 @@ public class DialogueTrigger : MonoBehaviour
     public bool isKeyTrigger = false;
     public KeyCode interactKey = KeyCode.E;
 
+    [Header("Day Restrictions")]
+    public int minDay = 1;
+    public int maxDay = 99;
+
     private bool triggered = false;
     private bool playerInRange = false;
     private PlayerController2D playerController;
@@ -57,27 +61,35 @@ public class DialogueTrigger : MonoBehaviour
     }
 
     public void TriggerDialogue()
-{
-    if (triggered) return;
-    if (dialogueRunner == null || dialogueRunner.IsDialogueRunning) return;
-
-    triggered = true;
-
-    if (playerController != null)
     {
-        playerController.enabled = false;
+        if (triggered) return;
+        if (dialogueRunner == null || dialogueRunner.IsDialogueRunning) return;
 
-        // 🔁 Reset animator to idle
-        Animator animator = playerController.GetComponent<Animator>();
-        if (animator != null)
+        int currentDay = GameManager.Instance != null ? GameManager.Instance.currentDay : 1;
+        if (currentDay < minDay || currentDay > maxDay)
         {
-            animator.SetBool("isMoving", false);
+            Debug.Log($"🛑 Dialogue '{yarnNodeName}' skipped: only triggers between days {minDay} and {maxDay} (today = {currentDay})");
+            return;
         }
+
+        triggered = true;
+
+        if (playerController != null)
+        {
+            playerController.enabled = false;
+
+            // Reset animator to idle
+            Animator animator = playerController.GetComponent<Animator>();
+            if (animator != null)
+            {
+                animator.SetBool("isMoving", false);
+            }
+        }
+
+        dialogueRunner.onDialogueComplete.AddListener(OnDialogueComplete);
+        dialogueRunner.StartDialogue(yarnNodeName);
     }
 
-    dialogueRunner.onDialogueComplete.AddListener(OnDialogueComplete);
-    dialogueRunner.StartDialogue(yarnNodeName);
-}
     private void OnDialogueComplete()
     {
         dialogueRunner.onDialogueComplete.RemoveListener(OnDialogueComplete);

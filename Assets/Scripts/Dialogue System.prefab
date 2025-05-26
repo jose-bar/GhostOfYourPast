@@ -196,6 +196,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1045472055891939464}
     m_Modifications:
+    - target: {fileID: 6323935187869300300, guid: 638e885a48f1a46c29aaa1b64688b208, type: 3}
+      propertyPath: m_Color.a
+      value: 0.5058824
+      objectReference: {fileID: 0}
     - target: {fileID: 6323935187928403876, guid: 638e885a48f1a46c29aaa1b64688b208, type: 3}
       propertyPath: m_Name
       value: Options List View
@@ -476,6 +480,10 @@ PrefabInstance:
     - target: {fileID: 4935123090305946392, guid: 67dde1b92175d4745aaea386e7555d40, type: 3}
       propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
       value: 1801810542
+      objectReference: {fileID: 0}
+    - target: {fileID: 4935123090371513927, guid: 67dde1b92175d4745aaea386e7555d40, type: 3}
+      propertyPath: m_Color.a
+      value: 0.67058825
       objectReference: {fileID: 0}
     - target: {fileID: 4935123090415912067, guid: 67dde1b92175d4745aaea386e7555d40, type: 3}
       propertyPath: m_SizeDelta.x
