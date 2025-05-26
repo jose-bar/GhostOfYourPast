@@ -17,7 +17,12 @@ public class GameManager : MonoBehaviour
     [Header("Debug")]
     public bool showDebugMessages = true;
 
+    
+
     bool puzzleSolvedThisDay = false;      // internal flag
+
+    private ScreenFader screenFader;
+    public float fadeStartTime = 15f; // When to begin fading (e.g., last 15 seconds)
 
     public bool HasPuzzleBeenSolved()      // called by DayEndTrigger
     {
@@ -39,6 +44,7 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+        screenFader = FindObjectOfType<ScreenFader>();
         StartNewDay();
     }
 
@@ -48,15 +54,16 @@ public class GameManager : MonoBehaviour
             EndDayFailure();
 
         if (!puzzleCompleted)
-        {
-            dayTimer -= Time.deltaTime;
-            UpdateUI();
+    {
+        dayTimer -= Time.deltaTime;
+        UpdateUI();
+        UpdateScreenDarkness();
 
-            if (dayTimer <= 0)
-            {
-                EndDayFailure();
-            }
+        if (dayTimer <= 0)
+        {
+            EndDayFailure();
         }
+    }
     }
 
     public void CompletePuzzle()
@@ -164,6 +171,25 @@ public class GameManager : MonoBehaviour
         }
     }
 
+        void UpdateScreenDarkness()
+    {
+        if (screenFader == null || screenFader.GetComponent<Image>() == null)
+            return;
+
+        float maxDarkness = 0.95f; // maximum fade alpha (0 = no dark, 1 = full black)
+
+        if (dayTimer <= fadeStartTime)
+        {
+            float t = Mathf.Clamp01(1f - (dayTimer / fadeStartTime)); // 0 → 1
+            // Ease-in darkness using quadratic acceleration
+            float eased = t * t; 
+            float alpha = Mathf.Lerp(0f, maxDarkness, eased);
+
+            Image fadeImg = screenFader.GetComponent<Image>();
+            Color c = fadeImg.color;
+            fadeImg.color = new Color(c.r, c.g, c.b, alpha);
+        }
+    }
 
     public void FreezeGameForSeconds(float duration)
     {
