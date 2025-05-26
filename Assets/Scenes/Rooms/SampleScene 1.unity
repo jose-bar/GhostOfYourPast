@@ -1275,6 +1275,7 @@ GameObject:
   - component: {fileID: 296478420}
   - component: {fileID: 296478421}
   - component: {fileID: 296478422}
+  - component: {fileID: 296478423}
   m_Layer: 0
   m_Name: Controller
   m_TagString: Untagged
@@ -1379,14 +1380,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   objectId: Remote
   displayName: Remote
-  interactionRange: 0.3
+  interactionRange: 0.5
   interactKey: 101
   interactionPrompt: Press E to interact
   isOneTimeUse: 0
   canBeTriggereByShadow: 1
   objectType: 5
-  itemsToReveal:
-  - {fileID: 0}
+  itemsToReveal: []
   revealItemsOnInteract: 0
   requiresItem: 0
   requiredItemName: 
@@ -1458,6 +1458,19 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.34, y: 0.17}
   m_EdgeRadius: 0
+--- !u!114 &296478423
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 296478417}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98a3d8617e2834f1a96d04358d83a018, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tv: {fileID: 1541753083}
 --- !u!1 &307905254
 GameObject:
   m_ObjectHideFlags: 0
@@ -1472,6 +1485,7 @@ GameObject:
   - component: {fileID: 307905258}
   - component: {fileID: 307905259}
   - component: {fileID: 307905260}
+  - component: {fileID: 307905261}
   m_Layer: 0
   m_Name: WaterBottle
   m_TagString: Untagged
@@ -1755,6 +1769,19 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &307905261
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 307905254}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 216beed9050b94e4ab05535530eba18a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  activeDays: 01000000
 --- !u!1001 &321417238
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5565,7 +5592,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1163752275
 Transform:
   m_ObjectHideFlags: 0
@@ -6822,6 +6849,8 @@ GameObject:
   - component: {fileID: 1541753079}
   - component: {fileID: 1541753082}
   - component: {fileID: 1541753081}
+  - component: {fileID: 1541753083}
+  - component: {fileID: 1541753084}
   m_Layer: 0
   m_Name: TV
   m_TagString: Untagged
@@ -6961,7 +6990,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: -0.05, y: -0.2}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -6971,8 +7000,83 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.59, y: 1.08}
+  m_Size: {x: 0.45, y: 0.7}
   m_EdgeRadius: 0
+--- !u!114 &1541753083
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1541753078}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa84587ce08e94015995be7f5d910fe5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tvOffSprite: {fileID: 2150578495356453743, guid: 2aaba8240b6dc478f900c14310cc39ae, type: 3}
+  tvOnSprite: {fileID: -8273726206761715322, guid: 7e7a205291b7cd747a8a582767fa1915, type: 3}
+  windowDuration: 1
+  extraObjects:
+  - {fileID: 1163752274}
+--- !u!114 &1541753084
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1541753078}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 567ed55686adf4c9bb1767b88e9e186a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objectId: TV
+  displayName: TV
+  interactionRange: 0.5
+  interactKey: 101
+  interactionPrompt: Press E to interact
+  isOneTimeUse: 0
+  canBeTriggereByShadow: 0
+  objectType: 4
+  itemsToReveal: []
+  revealItemsOnInteract: 0
+  requiresItem: 0
+  requiredItemName: 
+  consumeItemOnUse: 0
+  interactionSound: {fileID: 0}
+  closedSprite: {fileID: 0}
+  openedSprite: {fileID: 0}
+  completesDayOnInteract: 0
+  targetScene: 
+  spawnPosition: {x: 0, y: 0, z: 0}
+  doorCollider: {fileID: 0}
+  removeCollisionOnOpen: 1
+  isDoorPassage: 0
+  OnInteract:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 11500000, guid: fa84587ce08e94015995be7f5d910fe5, type: 3}
+        m_TargetAssemblyTypeName: UnityEngine.Object, UnityEngine
+        m_MethodName: set_name
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: AttemptInteract()
+          m_BoolArgument: 0
+        m_CallState: 2
+  OnPlayerEnterRange:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPlayerExitRange:
+    m_PersistentCalls:
+      m_Calls: []
+  OnShadowInteract:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1579934761
 GameObject:
   m_ObjectHideFlags: 0
@@ -7987,7 +8091,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0, y: -0.1}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -7997,7 +8101,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.47, y: 1.65}
+  m_Size: {x: 0.47, y: 1.4}
   m_EdgeRadius: 0
 --- !u!50 &1905432414
 Rigidbody2D:
